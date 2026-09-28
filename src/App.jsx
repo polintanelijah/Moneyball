@@ -33,9 +33,9 @@ export default function App() {
       <header className="flex justify-between items-center border-b border-slate-800 pb-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-100 flex items-center gap-2">
-            <ArrowRightLeft className="text-blue-500" /> NFL Trade Viability Analyzer
+            <ArrowRightLeft className="text-blue-500" /> NFL GM Simulator
           </h1>
-          <p className="text-xs text-slate-400">Knowledge-Based System & Cap Space Calculator</p>
+          <p className="text-xs text-slate-400">Trade Viability Analyzer</p>
         </div>
       </header>
 
