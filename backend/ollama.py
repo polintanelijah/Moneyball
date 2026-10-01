@@ -1,10 +1,14 @@
+import os
+
 import httpx
 
+OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.2:1b")
 
-async def analyze_trade(prompt):
 
+async def analyze_trade(prompt: str) -> str:
     payload = {
-        "model": "llama3.2",
+        "model": OLLAMA_MODEL,
         "stream": False,
         "messages": [
             {
@@ -18,12 +22,12 @@ async def analyze_trade(prompt):
         ]
     }
 
-    async with httpx.AsyncClient(timeout=120) as client:
+    async with httpx.AsyncClient(timeout=120.0) as client:
         response = await client.post(
-            "http://localhost:11434/api/chat",
-            json=payload
+            f"{OLLAMA_URL}/api/chat",
+            json=payload,
         )
+        response.raise_for_status()
 
         data = response.json()
-
         return data["message"]["content"]

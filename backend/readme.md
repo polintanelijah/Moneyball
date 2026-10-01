@@ -1,50 +1,48 @@
-Install the required Python packages: pip install -r requirements.txt
+# FastAPI + Ollama backend
 
-Start the FastAPI backend: uvicorn main:app --reload
+This is a small local API that sends trade data from the React frontend to
+Ollama. It uses `llama3.2:1b` by default, which is a lightweight model suitable
+for an 8 GB MacBook Air.
 
+## One-time setup
 
-Download and install Ollama from:
+1. Download and install Ollama from <https://ollama.com/>.
+2. Download the model:
 
-https://ollama.com/
+   ```bash
+   ollama pull llama3.2:1b
+   ```
 
-ollama pull llama3.2
+3. From the `backend` directory, create an environment and install packages:
 
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate
+   pip install -r requirements.txt
+   ```
 
-##mock trade data
-{
-  "teamA": {
-    "id": "DET",
-    "name": "Detroit Lions",
-    "capSpace": 18400000
-  },
-  "teamB": {
-    "id": "KC",
-    "name": "Kansas City Chiefs",
-    "capSpace": 12100000
-  },
-  "teamAPlayers": [
-    {
-      "id": "1",
-      "name": "Amon-Ra St. Brown",
-      "team": "DET",
-      "position": "WR",
-      "capHit": 4860000
-    },
-    {
-      "id": "3",
-      "name": "Aidan Hutchinson",
-      "team": "DET",
-      "position": "DE",
-      "capHit": 9800000
-    }
-  ],
-  "teamBPlayers": [
-    {
-      "id": "6",
-      "name": "Patrick Mahomes",
-      "team": "KC",
-      "position": "QB",
-      "capHit": 37000000
-    }
-  ]
-}
+## Run
+
+Keep Ollama running, then start the API from the `backend` directory:
+
+```bash
+source .venv/bin/activate
+uvicorn main:app --reload
+```
+
+In a second terminal, start the frontend from the project root:
+
+```bash
+npm install
+npm run dev
+```
+
+Open the URL shown by Vite, choose two teams and at least one player, then click
+**Analyze Trade Viability**.
+
+To use another installed Ollama model, set `OLLAMA_MODEL` before starting the
+API, for example:
+
+```bash
+OLLAMA_MODEL=llama3.2:3b uvicorn main:app --reload
+```

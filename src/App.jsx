@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import TeamPanel from './components/TeamPanel';
 import { NFL_TEAMS, MOCK_PLAYERS } from './data/mockData';
 import { ArrowRightLeft, Sparkles } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 export default function App() {
   const [teamAId, setTeamAId] = useState('');
@@ -18,14 +19,33 @@ export default function App() {
     setLoading(true);
     setVerdict(null);
 
-    // Simulated local response while waiting for backend API connection
-    setTimeout(() => {
-      setVerdict({
-        status: 'Viable',
-        analysis: `### Financial Context\n- **Team A Net Cap Change:** +$1.85M\n- **Team B Net Cap Change:** -$1.85M\n\n### RAG Trade Evaluation\nTrading **Amon-Ra St. Brown** for **Patrick Surtain II** addresses key positional needs for both teams while keeping both franchises compliant under salary cap limits.`
+    const teamA = NFL_TEAMS.find(team => team.id === teamAId);
+    const teamB = NFL_TEAMS.find(team => team.id === teamBId);
+
+    try {
+      const response = await fetch('/api/trade', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teamA, teamB, teamAPlayers, teamBPlayers }),
       });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || 'The trade analysis failed.');
+      }
+
+      setVerdict({ status: 'Complete', analysis: data.analysis });
+    } catch (error) {
+      setVerdict({
+        status: 'Error',
+        analysis: error instanceof TypeError
+          ? 'Could not reach the FastAPI backend. Make sure it is running on port 8000.'
+          : error.message,
+      });
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -72,7 +92,7 @@ export default function App() {
           className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 disabled:text-slate-600 text-white font-semibold px-6 py-3 rounded-xl transition-all shadow-lg cursor-pointer disabled:cursor-not-allowed"
         >
           <Sparkles className="w-5 h-5" />
-          {loading ? 'Executing RAG Analysis...' : 'Analyze Trade Viability'}
+          {loading ? 'Analyzing Trade...' : 'Analyze Trade Viability'}
         </button>
       </div>
 
@@ -80,12 +100,12 @@ export default function App() {
         <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-xl space-y-3">
           <div className="flex items-center gap-2">
             <span className="text-xs uppercase tracking-wider text-slate-400">Verdict:</span>
-            <span className="bg-emerald-500/20 text-emerald-400 text-xs font-bold px-2.5 py-1 rounded-full border border-emerald-500/30">
+            <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${verdict.status === 'Error' ? 'bg-red-500/20 text-red-400 border-red-500/30' : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'}`}>
               {verdict.status}
             </span>
           </div>
-          <div className="text-slate-300 text-sm whitespace-pre-line leading-relaxed">
-            {verdict.analysis}
+          <div className="text-slate-300 text-sm leading-relaxed [&_h1]:font-bold [&_h2]:font-bold [&_h3]:font-bold [&_h3]:mt-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:my-2">
+            <ReactMarkdown>{verdict.analysis}</ReactMarkdown>
           </div>
         </div>
       )}
