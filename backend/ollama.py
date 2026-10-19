@@ -19,7 +19,11 @@ async def analyze_trade(prompt: str) -> str:
                 "role": "user",
                 "content": prompt
             }
-        ]
+            
+        ],
+        "options": {
+            "temperature": 0.0 
+        }
     }
 
     async with httpx.AsyncClient(timeout=120.0) as client:
