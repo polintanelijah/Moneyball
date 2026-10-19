@@ -16,8 +16,10 @@ You are an NFL general manager assistant.
 Analyze this proposed trade.
 
 TRADE DETAILS:
-- {trade.teamA.name} trades: {team_a_players}
-- {trade.teamB.name} trades: {team_b_players}
+- {trade.teamA.name} SENDS: {team_a_players}
+- {trade.teamA.name} RECEIVES: {team_b_players}
+- {trade.teamB.name} SENDS: {team_b_players}
+- {trade.teamB.name} RECEIVES: {team_a_players}
 
 Current cap space and financial status:
 
