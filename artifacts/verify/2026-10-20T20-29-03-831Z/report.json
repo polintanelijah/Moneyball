@@ -1,0 +1,24 @@
+{
+  "result": "incomplete",
+  "runDir": "/Applications/work/classes/capstone/Moneyball/artifacts/verify/2026-10-20T20-29-03-831Z",
+  "checks": [
+    "App heading rendered",
+    "Analyze disabled before assets are selected"
+  ],
+  "screenshots": [
+    "/Applications/work/classes/capstone/Moneyball/artifacts/verify/2026-10-20T20-29-03-831Z/01-empty.png",
+    "/Applications/work/classes/capstone/Moneyball/artifacts/verify/2026-10-20T20-29-03-831Z/failure.png"
+  ],
+  "browserErrors": [],
+  "tradeResponses": [],
+  "doctor": {
+    "api": "http://127.0.0.1:8000",
+    "ui": "http://127.0.0.1:5173",
+    "ollamaModel": "llama3.2:1b",
+    "managedPids": [
+      33702,
+      33703
+    ]
+  },
+  "error": "Error: Timed out waiting for selection DET; browser state: {\"value\":\"\",\"active\":\"team-a-team\"}\n    at Cdp.choose (file:///Applications/work/classes/capstone/Moneyball/.codex/skills/verify/scripts/verify.mjs:165:13)\n    at async run (file:///Applications/work/classes/capstone/Moneyball/.codex/skills/verify/scripts/verify.mjs:253:5)"
+}

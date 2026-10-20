@@ -4,6 +4,11 @@ This is a small local API that sends trade data from the React frontend to
 Ollama. It uses `llama3.2:1b` by default, which is a lightweight model suitable
 for an 8 GB MacBook Air.
 
+`POST /api/trade` streams newline-delimited JSON events (`application/x-ndjson`).
+Each `delta` event contains a `content` fragment; the stream ends with a `done`
+event or an `error` event with a `message`. The frontend displays fragments as
+they arrive and keeps partial text visible if an error occurs.
+
 ## One-time setup
 
 1. Download and install Ollama from <https://ollama.com/>.

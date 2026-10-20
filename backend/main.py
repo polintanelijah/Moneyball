@@ -1,9 +1,11 @@
-from fastapi import FastAPI, HTTPException
-import httpx
+import json
+
+from fastapi import FastAPI
+from fastapi.responses import StreamingResponse
 
 from schemas import TradeRequest
 from prompt import build_trade_prompt
-from ollama import analyze_trade
+from ollama import stream_trade
 
 app = FastAPI(title="NFL GM Simulator API")
 
@@ -17,19 +19,12 @@ def home():
 async def trade(request: TradeRequest):
     prompt = build_trade_prompt(request)
 
-    try:
-        analysis = await analyze_trade(prompt)
-    except httpx.RequestError as exc:
-        raise HTTPException(
-            status_code=503,
-            detail="Could not reach Ollama. Make sure Ollama is running.",
-        ) from exc
-    except httpx.HTTPStatusError as exc:
-        detail = "Ollama could not analyze the trade."
-        try:
-            detail = exc.response.json().get("error", detail)
-        except ValueError:
-            pass
-        raise HTTPException(status_code=502, detail=detail) from exc
+    async def events():
+        async for event in stream_trade(prompt):
+            yield json.dumps(event) + "\n"
 
-    return {"analysis": analysis}
+    return StreamingResponse(
+        events(),
+        media_type="application/x-ndjson",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )

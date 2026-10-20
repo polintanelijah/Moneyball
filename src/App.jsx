@@ -3,6 +3,7 @@ import TeamPanel from './components/TeamPanel';
 import { NFL_TEAMS, MOCK_PLAYERS } from './data/mockData';
 import { ArrowRightLeft, Sparkles } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import { readTradeStream } from './utils/tradeStream';
 
 export default function App() {
   const [teamAId, setTeamAId] = useState('');
@@ -29,20 +30,26 @@ export default function App() {
         body: JSON.stringify({ teamA, teamB, teamAPlayers, teamBPlayers }),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.detail || 'The trade analysis failed.');
+        const data = await response.json();
+        throw new Error(typeof data.detail === 'string' ? data.detail : 'The trade analysis failed.');
       }
 
-      setVerdict({ status: 'Complete', analysis: data.analysis });
-    } catch (error) {
-      setVerdict({
-        status: 'Error',
-        analysis: error instanceof TypeError
-          ? 'Could not reach the FastAPI backend. Make sure it is running on port 8000.'
-          : error.message,
+      setVerdict({ status: 'Streaming', analysis: '' });
+      await readTradeStream(response.body, (content) => {
+        setVerdict(previous => ({ status: 'Streaming', analysis: previous.analysis + content }));
       });
+      setVerdict(previous => ({ ...previous, status: 'Complete' }));
+    } catch (error) {
+      const message = error instanceof TypeError
+        ? 'Could not reach the FastAPI backend. Make sure it is running on port 8000.'
+        : error.message;
+      setVerdict(previous => ({
+        status: 'Error',
+        analysis: previous?.analysis
+          ? `${previous.analysis}\n\n**Analysis stopped:** ${message}`
+          : message,
+      }));
     } finally {
       setLoading(false);
     }
@@ -89,6 +96,7 @@ export default function App() {
         <button
           disabled={!teamAId || !teamBId || (teamAPlayers.length === 0 && teamBPlayers.length === 0) || loading}
           onClick={handleAnalyzeTrade}
+          id="analyze-trade"
           className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 disabled:text-slate-600 text-white font-semibold px-6 py-3 rounded-xl transition-all shadow-lg cursor-pointer disabled:cursor-not-allowed"
         >
           <Sparkles className="w-5 h-5" />
@@ -100,12 +108,14 @@ export default function App() {
         <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-xl space-y-3">
           <div className="flex items-center gap-2">
             <span className="text-xs uppercase tracking-wider text-slate-400">Verdict:</span>
-            <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${verdict.status === 'Error' ? 'bg-red-500/20 text-red-400 border-red-500/30' : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'}`}>
+            <span id="verdict-status" className={`text-xs font-bold px-2.5 py-1 rounded-full border ${verdict.status === 'Error' ? 'bg-red-500/20 text-red-400 border-red-500/30' : verdict.status === 'Streaming' ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'}`}>
               {verdict.status}
             </span>
           </div>
-          <div className="text-slate-300 text-sm leading-relaxed [&_h1]:font-bold [&_h2]:font-bold [&_h3]:font-bold [&_h3]:mt-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:my-2">
-            <ReactMarkdown>{verdict.analysis}</ReactMarkdown>
+          <div id="verdict-analysis" className="text-slate-300 text-sm leading-relaxed [&_h1]:font-bold [&_h2]:font-bold [&_h3]:font-bold [&_h3]:mt-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:my-2">
+            {verdict.analysis
+              ? <ReactMarkdown>{verdict.analysis}</ReactMarkdown>
+              : <p className="text-slate-400 italic">Waiting for the first token...</p>}
           </div>
         </div>
       )}

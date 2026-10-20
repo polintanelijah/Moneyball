@@ -1,0 +1,36 @@
+{
+  "result": "incomplete",
+  "runDir": "/Applications/work/classes/capstone/Moneyball/artifacts/verify/2026-10-20T20-30-10-850Z",
+  "checks": [
+    "App heading rendered",
+    "Analyze disabled before assets are selected",
+    "Both roster selectors open",
+    "Analyze disabled without a player",
+    "Detroit player appears in outgoing assets",
+    "Detroit projected cap updates when sending Amon-Ra",
+    "Denver projected cap updates when receiving Amon-Ra",
+    "Analyze enabled with a player",
+    "Denver player appears in outgoing assets",
+    "Detroit projected cap includes both sides",
+    "Denver projected cap includes both sides"
+  ],
+  "screenshots": [
+    "/Applications/work/classes/capstone/Moneyball/artifacts/verify/2026-10-20T20-30-10-850Z/01-empty.png",
+    "/Applications/work/classes/capstone/Moneyball/artifacts/verify/2026-10-20T20-30-10-850Z/02-teams.png",
+    "/Applications/work/classes/capstone/Moneyball/artifacts/verify/2026-10-20T20-30-10-850Z/03-player-a.png",
+    "/Applications/work/classes/capstone/Moneyball/artifacts/verify/2026-10-20T20-30-10-850Z/04-two-sided-trade.png",
+    "/Applications/work/classes/capstone/Moneyball/artifacts/verify/2026-10-20T20-30-10-850Z/failure.png"
+  ],
+  "browserErrors": [],
+  "tradeResponses": [],
+  "doctor": {
+    "api": "http://127.0.0.1:8000",
+    "ui": "http://127.0.0.1:5173",
+    "ollamaModel": "llama3.2:1b",
+    "managedPids": [
+      33976,
+      33977
+    ]
+  },
+  "error": "Error: Removing Detroit player removes the asset\n    at assert (file:///Applications/work/classes/capstone/Moneyball/.codex/skills/verify/scripts/verify.mjs:17:25)\n    at check (file:///Applications/work/classes/capstone/Moneyball/.codex/skills/verify/scripts/verify.mjs:214:5)\n    at run (file:///Applications/work/classes/capstone/Moneyball/.codex/skills/verify/scripts/verify.mjs:270:5)"
+}
