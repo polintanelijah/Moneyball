@@ -1,0 +1,46 @@
+{
+  "result": "incomplete",
+  "runDir": "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T02-11-25-594Z",
+  "checks": [
+    "App heading rendered",
+    "Analyze disabled before assets are selected",
+    "Both roster selectors open",
+    "Analyze disabled without a player",
+    "Detroit player appears in outgoing assets",
+    "Detroit projected cap updates when sending Amon-Ra",
+    "Denver projected cap updates when receiving Amon-Ra",
+    "Analyze enabled with a player",
+    "Denver player appears in outgoing assets",
+    "Detroit projected cap includes both sides",
+    "Denver projected cap includes both sides",
+    "Removing Detroit player removes the asset",
+    "Detroit cap recalculates after removal",
+    "Denver cap recalculates after removal"
+  ],
+  "screenshots": [
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T02-11-25-594Z/01-empty.png",
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T02-11-25-594Z/02-teams.png",
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T02-11-25-594Z/03-player-a.png",
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T02-11-25-594Z/04-two-sided-trade.png",
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T02-11-25-594Z/05-removed-player.png",
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T02-11-25-594Z/06-streaming.png",
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T02-11-25-594Z/failure.png"
+  ],
+  "browserErrors": [],
+  "tradeResponses": [
+    {
+      "status": 200,
+      "url": "http://127.0.0.1:5173/api/trade"
+    }
+  ],
+  "doctor": {
+    "api": "http://127.0.0.1:8000",
+    "ui": "http://127.0.0.1:5173",
+    "ollamaModel": "llama3.2:1b",
+    "managedPids": [
+      69854,
+      69855
+    ]
+  },
+  "error": "Error: Live Ollama analysis completed (got Error: Could not reach Ollama: Error: Ollama returned HTTP 400: {\"error\":\"json: cannot unmarshal string into Go value of type struct { *api.ChatRequest; Think json.RawMessage \\\"json:\\\\\\\"think\\\\\\\"\\\" }\"})\n    at assert (file:///Users/alex/Desktop/moneyball/.codex/skills/verify/scripts/verify.mjs:17:25)\n    at check (file:///Users/alex/Desktop/moneyball/.codex/skills/verify/scripts/verify.mjs:214:5)\n    at run (file:///Users/alex/Desktop/moneyball/.codex/skills/verify/scripts/verify.mjs:285:5)"
+}

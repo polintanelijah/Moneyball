@@ -1,0 +1,57 @@
+{
+  "result": "incomplete",
+  "runDir": "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T01-42-10-210Z",
+  "checks": [
+    "App heading rendered",
+    "Analyze disabled before assets are selected",
+    "Both roster selectors open",
+    "Analyze disabled without a player",
+    "Detroit player appears in outgoing assets",
+    "Detroit projected cap updates when sending Amon-Ra",
+    "Denver projected cap updates when receiving Amon-Ra",
+    "Analyze enabled with a player",
+    "Denver player appears in outgoing assets",
+    "Detroit projected cap includes both sides",
+    "Denver projected cap includes both sides",
+    "Removing Detroit player removes the asset",
+    "Detroit cap recalculates after removal",
+    "Denver cap recalculates after removal",
+    "Live Ollama analysis completed (got Complete: {\"analysis\":\"**Analysis of Proposed Trade**\\n\\n**1. Player Value:**\\n\\n- Amon-Ra St. Brown: St. Brown is a solid wide receiver, but his production and impact on the field are not elite. He's a reliabl)",
+    "Live analysis contains a substantial verdict",
+    "Browser received successful trade stream"
+  ],
+  "screenshots": [
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T01-42-10-210Z/01-empty.png",
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T01-42-10-210Z/02-teams.png",
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T01-42-10-210Z/03-player-a.png",
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T01-42-10-210Z/04-two-sided-trade.png",
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T01-42-10-210Z/05-removed-player.png",
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T01-42-10-210Z/06-streaming.png",
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T01-42-10-210Z/07-complete.png",
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T01-42-10-210Z/failure.png"
+  ],
+  "browserErrors": [
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+  ],
+  "tradeResponses": [
+    {
+      "status": 200,
+      "url": "http://127.0.0.1:5173/api/trade"
+    },
+    {
+      "status": 500,
+      "url": "http://127.0.0.1:5173/api/trade"
+    }
+  ],
+  "doctor": {
+    "api": "http://127.0.0.1:8000",
+    "ui": "http://127.0.0.1:5173",
+    "ollamaModel": "llama3.2:1b",
+    "managedPids": [
+      68822,
+      68823
+    ]
+  },
+  "verdict": "{\"analysis\":\"**Analysis of Proposed Trade**\\n\\n**1. Player Value:**\\n\\n- Amon-Ra St. Brown: St. Brown is a solid wide receiver, but his production and impact on the field are not elite. He's a reliable, mid-tier receiver who can provide a spark in the Lions' offense.\\n- Patrick Surtain II: Surtain is a talented cornerback, but he's also a young player who is still developing. He's shown flashes of brilliance, but his consistency and ability to handle top-tier receivers are still unproven.\\n\\n**2. Positional Value:**\\n\\n- WR: St. Brown is a clear upgrade over most of the Lions' current receiving corps, while Surtain II is a valuable asset on the Broncos' defense.\\n- CB: Surtain II is a more valuable asset than St. Brown, as he provides a higher level of skill and potential on the defensive side of the ball.\\n\\n**3. Salary Cap Impact:**\\n\\n- Detroit Lions: Trading St. Brown reduces the Lions' cap hit by $4,860,000. This opens up more cap space for the team, potentially allowing them to sign or retain other players.\\n- Denver Broncos: Trading Surtain II increases the Broncos' cap hit by $6,710,000. This could be a challenge for the team, as they'll need to manage this higher cap hit and potentially make other roster adjustments.\\n\\n**4. Benefits for each team:**\\n\\n- Detroit Lions: The trade provides the Lions with a significant increase in cap space and the potential for a more dynamic receiving corps. This could help the team compete in the NFC North.\\n- Denver Broncos: The trade brings in a talented cornerback who can help anchor the Broncos' defense. While it increases the team's cap hit, Surtain II's skills could justify the investment.\\n\\n**5. Risks for each team:**\\n\\n- Detroit Lions: Trading a wide receiver like St. Brown requires the Lions to trust that they'll be able to acquire or retain other talent. If the team's receiving corps isn't improved, this trade may not yield the desired results.\\n- Denver Broncos: Trading a young cornerback like Surtain II comes with risk. If he doesn't pan out as expected, the Broncos may be left with a costly mistake on their hands. However, the team's defensive needs and the value of Surtain II may justify the investment.\"}",
+  "error": "Error: Backend connection failure is explained in the UI\n    at assert (file:///Users/alex/Desktop/moneyball/.codex/skills/verify/scripts/verify.mjs:17:25)\n    at check (file:///Users/alex/Desktop/moneyball/.codex/skills/verify/scripts/verify.mjs:214:5)\n    at run (file:///Users/alex/Desktop/moneyball/.codex/skills/verify/scripts/verify.mjs:293:5)"
+}

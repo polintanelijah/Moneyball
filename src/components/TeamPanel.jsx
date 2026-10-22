@@ -2,6 +2,7 @@ import React from 'react';
 import { UserMinus } from 'lucide-react';
 
 export default function TeamPanel({ 
+  idPrefix,
   label, 
   teams, 
   selectedTeamId, 
@@ -12,6 +13,7 @@ export default function TeamPanel({
   onRemovePlayer,
   incomingPlayers
 }) {
+const panelId = idPrefix || label.toLowerCase().replace(/\s+/g, '-');
   const currentTeam = teams.find(t => t.id === selectedTeamId);
   const currentCap = currentTeam ? currentTeam.capSpace : 0;
 
@@ -24,8 +26,13 @@ export default function TeamPanel({
     <div className="bg-slate-800 border border-slate-700 rounded-xl p-5 flex flex-col justify-between shadow-lg">
       <div>
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-slate-200">{label}</h2>
-          {currentTeam && (
+        <h2
+ 		 id={`${panelId}-heading`}
+  	className="text-xl font-bold text-slate-200"
+	>
+ 	 {label}
+</h2>  
+	{currentTeam && (
             <span className="text-xs bg-slate-700 text-slate-300 px-2.5 py-1 rounded-full font-mono">
               Cap: ${(currentCap / 1e6).toFixed(2)}M
             </span>
@@ -35,7 +42,8 @@ export default function TeamPanel({
         {/* Team Dropdown */}
         <div className="mb-4">
           <label className="block text-xs text-slate-400 mb-1">Select Franchise</label>
-          <select 
+          <select
+	   id={`${idPrefix}-team`} 
             value={selectedTeamId} 
             onChange={(e) => onSelectTeam(e.target.value)}
             className="w-full bg-slate-900 border border-slate-700 text-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
@@ -47,31 +55,46 @@ export default function TeamPanel({
           </select>
         </div>
 
-        {/* Player Dropdown */}
-        {selectedTeamId && (
-          <div className="mb-4">
-            <label className="block text-xs text-slate-400 mb-1">Add Player to Trade</label>
-            <select 
-              defaultValue=""
-              onChange={(e) => {
-                if (e.target.value) {
-                  const player = availablePlayers.find(p => p.id === e.target.value);
-                  onAddPlayer(player);
-                  e.target.value = "";
-                }
-              }}
-              className="w-full bg-slate-900 border border-slate-700 text-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-            >
-              <option value="">-- Select Player --</option>
-              {availablePlayers.map(p => (
-                <option key={p.id} value={p.id}>
-                  {p.name} ({p.position}) - ${(p.capHit / 1e6).toFixed(2)}M
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
+       {/* Player Dropdown */}
+{selectedTeamId && (
+  <div className="mb-4">
+    <label
+      htmlFor={`${panelId}-player`}
+      className="block text-xs text-slate-400 mb-1"
+    >
+      Add Player to Trade
+    </label>
 
+    <select
+      id={`${panelId}-player`}
+      defaultValue=""
+      onChange={(e) => {
+        const selectedId = e.target.value;
+
+        if (selectedId) {
+          const player = availablePlayers.find(
+            p => String(p.id) === selectedId
+          );
+
+          if (player) {
+            onAddPlayer(player);
+          }
+
+          e.target.value = "";
+        }
+      }}
+      className="w-full bg-slate-900 border border-slate-700 text-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+    >
+      <option value="">-- Select Player --</option>
+
+      {availablePlayers.map(p => (
+        <option key={p.id} value={p.id}>
+          {p.name} ({p.position}) - ${(p.capHit / 1e6).toFixed(2)}M
+        </option>
+      ))}
+    </select>
+  </div>
+)} 
         {/* Selected Players List */}
         <div className="mt-4">
           <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
@@ -89,14 +112,16 @@ export default function TeamPanel({
                     <p className="text-sm font-semibold text-slate-200">{player.name}</p>
                     <p className="text-xs text-slate-400">{player.position} | Cap Hit: ${(player.capHit / 1e6).toFixed(2)}M</p>
                   </div>
-                  <button 
-                    onClick={() => onRemovePlayer(player.id)}
-                    className="text-slate-500 hover:text-red-400 p-1 transition-colors cursor-pointer"
-                    title="Remove Player"
-                  >
-                    <UserMinus className="w-4 h-4" />
-                  </button>
-                </div>
+<button
+  type="button"
+  onClick={() => onRemovePlayer(player.id)}
+  className="text-slate-500 hover:text-red-400 p-1 transition-colors cursor-pointer"
+  aria-label={`Remove ${player.name} from ${label}`}
+  title="Remove Player"
+>
+  <UserMinus className="w-4 h-4" />
+</button>                
+</div>
               ))
             )}
           </div>

@@ -1,5 +1,6 @@
 from fastapi import FastAPI
-
+from fastapi.responses import StreamingResponse
+from ollama import analyze_trade_stream
 from schemas import TradeRequest
 from prompt import build_trade_prompt
 from ollama import analyze_trade
@@ -17,8 +18,7 @@ async def trade(request: TradeRequest):
 
     prompt = build_trade_prompt(request)
 
-    analysis = await analyze_trade(prompt)
-
-    return {
-        "analysis": analysis
-    }
+    return StreamingResponse(
+    analyze_trade_stream(prompt),
+    media_type="text/plain"
+)

@@ -1,0 +1,22 @@
+{
+  "result": "incomplete",
+  "runDir": "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T00-23-42-239Z",
+  "checks": [],
+  "screenshots": [
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T00-23-42-239Z/failure.png"
+  ],
+  "browserErrors": [
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+  ],
+  "tradeResponses": [],
+  "doctor": {
+    "api": "http://127.0.0.1:8000",
+    "ui": "http://127.0.0.1:5173",
+    "ollamaModel": "llama3.2:1b",
+    "managedPids": [
+      68008,
+      68009
+    ]
+  },
+  "error": "Error: Timed out waiting for rendered trade form\n    at waitFor (file:///Users/alex/Desktop/moneyball/.codex/skills/verify/scripts/verify.mjs:37:9)\n    at async run (file:///Users/alex/Desktop/moneyball/.codex/skills/verify/scripts/verify.mjs:245:5)"
+}

@@ -1,0 +1,56 @@
+{
+  "result": "pass",
+  "runDir": "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T02-15-53-171Z",
+  "checks": [
+    "App heading rendered",
+    "Analyze disabled before assets are selected",
+    "Both roster selectors open",
+    "Analyze disabled without a player",
+    "Detroit player appears in outgoing assets",
+    "Detroit projected cap updates when sending Amon-Ra",
+    "Denver projected cap updates when receiving Amon-Ra",
+    "Analyze enabled with a player",
+    "Denver player appears in outgoing assets",
+    "Detroit projected cap includes both sides",
+    "Denver projected cap includes both sides",
+    "Removing Detroit player removes the asset",
+    "Detroit cap recalculates after removal",
+    "Denver cap recalculates after removal",
+    "Live Ollama analysis completed (got Complete: **Initial Analysis:** The proposed trade involves the Detroit Lions acquiring Amon-Ra St. Brown, a talented wide receiver, and the Denver Broncos giving up Patrick Surtain II, a talented cornerback, i)",
+    "Live analysis contains a substantial verdict",
+    "Browser received successful trade stream",
+    "Backend connection failure is explained in the UI",
+    "No browser exceptions or console errors: "
+  ],
+  "screenshots": [
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T02-15-53-171Z/01-empty.png",
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T02-15-53-171Z/02-teams.png",
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T02-15-53-171Z/03-player-a.png",
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T02-15-53-171Z/04-two-sided-trade.png",
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T02-15-53-171Z/05-removed-player.png",
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T02-15-53-171Z/06-streaming.png",
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T02-15-53-171Z/07-complete.png",
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T02-15-53-171Z/08-error.png"
+  ],
+  "browserErrors": [],
+  "tradeResponses": [
+    {
+      "status": 200,
+      "url": "http://127.0.0.1:5173/api/trade"
+    },
+    {
+      "status": 200,
+      "url": "http://127.0.0.1:5173/api/trade"
+    }
+  ],
+  "doctor": {
+    "api": "http://127.0.0.1:8000",
+    "ui": "http://127.0.0.1:5173",
+    "ollamaModel": "llama3.2:1b",
+    "managedPids": [
+      70119,
+      70120
+    ]
+  },
+  "verdict": "**Initial Analysis:** The proposed trade involves the Detroit Lions acquiring Amon-Ra St. Brown, a talented wide receiver, and the Denver Broncos giving up Patrick Surtain II, a talented cornerback, in exchange for a significant amount of cap space. **Player Value:** Amon-Ra St. Brown is considered a top-tier wide receiver prospect. His athleticism, route-running skills, and ability to create separation from defenders make him a valuable asset. Based on his career numbers and draft comparisons, I would estimate his value to be around $2.5 million to $3 million per year, assuming he plays at a high level. Patrick Surtain II, on the other hand, is a shutdown cornerback with exceptional size, speed, and athleticism. His value to the Broncos is significant, and his deal is likely worth $6 million to $7 million per year. **Positional Value:** St. Brown is a wide receiver, and his value is closely tied to the offense. His position is a high-demand spot, and his performance will directly impact the team's passing game. In contrast, Surtain II is a cornerback, and his value is tied to the defense. While his position is also important, his performance is less directly tied to the team's overall strategy. **Salary Cap Impact:** The Lions will have a significant cap space surplus, potentially exceeding $13 million to $15 million per year. The Broncos, however, will experience a substantial salary cap hit, potentially exceeding $15 million to $18 million per year. **Benefits for Each Team:** The Lions will gain a talented wide receiver in St. Brown, who can create separation and take targets away from other receivers. This can lead to increased passing yards and touchdowns. The Broncos, on the other hand, will surrender a shutdown cornerback in Surtain II, which can be a significant liability on the defensive backfield. This can lead to increased defensive pressure and sacks. **Risks for Each Team:** The Lions will face risks in this trade, particularly if St. Brown takes a significant hit in his rookie season. If he struggles to adjust to the NFL's level of competition, the Lions may have to reevaluate their position. The Broncos will face risks if Surtain II struggles to keep up with the physical demands of the NFL. If he continues to struggle, the Broncos may need to reevaluate their cornerback depth chart. **Final Recommendation:** Based on the analysis, I would recommend the trade to the Detroit Lions."
+}

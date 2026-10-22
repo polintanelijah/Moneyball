@@ -1,0 +1,55 @@
+{
+  "result": "incomplete",
+  "runDir": "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T01-35-52-842Z",
+  "checks": [
+    "App heading rendered",
+    "Analyze disabled before assets are selected",
+    "Both roster selectors open",
+    "Analyze disabled without a player",
+    "Detroit player appears in outgoing assets",
+    "Detroit projected cap updates when sending Amon-Ra",
+    "Denver projected cap updates when receiving Amon-Ra",
+    "Analyze enabled with a player",
+    "Denver player appears in outgoing assets",
+    "Detroit projected cap includes both sides",
+    "Denver projected cap includes both sides",
+    "Removing Detroit player removes the asset",
+    "Detroit cap recalculates after removal",
+    "Denver cap recalculates after removal",
+    "Live Ollama analysis completed (got Complete: {\"analysis\":\"Analysis of Proposed Trade:\\n\\n**1. Player Value**\\n\\nAmon-Ra St. Brown is a solid, young wide receiver, but his value is somewhat limited by his position. He's not a top-tier receiver, b)",
+    "Live analysis contains a substantial verdict",
+    "Browser received successful trade stream"
+  ],
+  "screenshots": [
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T01-35-52-842Z/01-empty.png",
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T01-35-52-842Z/02-teams.png",
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T01-35-52-842Z/03-player-a.png",
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T01-35-52-842Z/04-two-sided-trade.png",
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T01-35-52-842Z/05-removed-player.png",
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T01-35-52-842Z/06-streaming.png",
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T01-35-52-842Z/07-complete.png",
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T01-35-52-842Z/failure.png"
+  ],
+  "browserErrors": [],
+  "tradeResponses": [
+    {
+      "status": 200,
+      "url": "http://127.0.0.1:5173/api/trade"
+    },
+    {
+      "status": 200,
+      "url": "http://127.0.0.1:5173/api/trade"
+    }
+  ],
+  "doctor": {
+    "api": "http://127.0.0.1:8000",
+    "ui": "http://127.0.0.1:5173",
+    "ollamaModel": "llama3.2:1b",
+    "managedPids": [
+      68696,
+      68697
+    ]
+  },
+  "verdict": "{\"analysis\":\"Analysis of Proposed Trade:\\n\\n**1. Player Value**\\n\\nAmon-Ra St. Brown is a solid, young wide receiver, but his value is somewhat limited by his position. He's not a top-tier receiver, but rather a reliable, mid-tier option. Patrick Surtain II, on the other hand, is a talented cornerback with a strong track record of production.\\n\\n**2. Positional Value**\\n\\nThe trade favors Denver, as they're acquiring a top-tier cornerback (Surtain II) in Patrick Surtain II, who should provide significant improvement to their secondary. Detroit is trading a mid-tier receiver (St. Brown).\\n\\n**3. Salary Cap Impact**\\n\\nThe trade is relatively cap-friendly for both teams. Detroit's cap hit drops significantly ($4,860,000 to $0), while Denver's cap hit increases ($6,710,000), but they still have a decent amount of space ($5,200,000).\\n\\n**4. Benefits for Each Team**\\n\\nBenefits for Denver:\\n\\n* Acquire a talented, young cornerback in Surtain II, who can help upgrade their secondary.\\n* Clear out cap space with the trade.\\n\\nBenefits for Detroit:\\n\\n* Receive a high-round pick (assumed to be a 2024 or later pick) from Denver, which could be valuable in the draft.\\n* Create cap space, potentially opening up room for other signings or extensions.\\n\\n**5. Risks for Each Team**\\n\\nRisks for Denver:\\n\\n* Paying a higher cap hit for Surtain II, which could be a burden if he underperforms.\\n* The risk that St. Brown's value doesn't translate to a high-round pick, which could be a disappointment.\\n\\nRisks for Detroit:\\n\\n* The risk that St. Brown's value doesn't translate to a high-round pick, which could be a disappointment.\\n* The risk that the trade doesn't yield the desired draft pick value, potentially setting back the team's rebuild.\"}",
+  "error": "Error: Timed out waiting for visible error state\n    at waitFor (file:///Users/alex/Desktop/moneyball/.codex/skills/verify/scripts/verify.mjs:37:9)\n    at async run (file:///Users/alex/Desktop/moneyball/.codex/skills/verify/scripts/verify.mjs:292:5)"
+}
