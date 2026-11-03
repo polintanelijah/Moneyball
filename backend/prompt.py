@@ -62,8 +62,8 @@ Format your response using the exact markdown headings below:
 - **{trade.teamB.name}**: [Analyze immediate cap hits and long-term financial viability]
 
 ### Player & Positional Value
-- {trade.teamA.name}: [Roster impact of losing {team_a_players}]
-- {trade.teamB.name}: [Roster impact of losing {team_b_players}] 
+- **{trade.teamA.name}**: [Roster impact of losing {team_a_players}]
+- **{trade.teamB.name}**: [Roster impact of losing {team_b_players}] 
 
 ### Benefits & Risks
 - **{trade.teamA.name} Benefits**: 
