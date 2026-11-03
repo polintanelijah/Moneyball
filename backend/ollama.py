@@ -24,13 +24,13 @@ async def analyze_trade(payload):
         )
 
         request_payload = {
-            "model": "llama3.2:1b",
+            "model": "llama3.1:8b",
             "messages": [
                 {
                     "role": "system",
                     "content": (
                         "You are an expert NFL general manager. "
-                        "Evaluate trades based on player value, "
+                        "Evaluate trades based on real-world player value, "
                         "team needs, salary cap implications, "
                         "and fairness. Provide a detailed analysis "
                         "with a clear final recommendation."
@@ -43,7 +43,8 @@ async def analyze_trade(payload):
             ],
             "stream": False,
             "options": {
-                "num_predict": 512
+                "num_predict": 512,
+                "temperature": 0.0
             }
         }
 
@@ -80,12 +81,12 @@ async def analyze_trade_stream(prompt):
     if isinstance(prompt, dict) and "messages" in prompt:
         payload = {
             **prompt,
-            "model": prompt.get("model", "llama3.2:1b"),
+            "model": prompt.get("model", "llama3.1:8b"),
             "stream": True
         }
     else:
         payload = {
-            "model": "llama3.2:1b",
+            "model": "llama3.1:8b",
             "messages": [
                 {
                     "role": "user",
