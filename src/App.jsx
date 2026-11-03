@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import TeamPanel from './components/TeamPanel';
 import { NFL_TEAMS, MOCK_PLAYERS } from './data/mockData';
 import { ArrowRightLeft, Sparkles } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 // If the Vite dev server proxies /api to FastAPI, this relative path works
 // without cross-origin requests. Override with VITE_TRADE_API_URL if needed.
@@ -48,6 +49,7 @@ async function readTradeStream(body, onUpdate) {
 }
 
 export default function App() {
+  const [showLanding, setShowLanding] = useState(true);
   const [teamAId, setTeamAId] = useState('');
   const [teamBId, setTeamBId] = useState('');
   const [teamAPlayers, setTeamAPlayers] = useState([]);
@@ -154,6 +156,65 @@ if (contentType.includes('application/json')) {
       ? 'bg-red-500/20 text-red-400 border-red-500/30'
       : 'bg-blue-500/20 text-blue-400 border-blue-500/30';
 
+
+  if (showLanding) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center space-y-8 max-w-5xl mx-auto">
+        {/* Header Icon & Title */}
+        <div className="flex items-center justify-center gap-4">
+          <ArrowRightLeft className="w-16 h-16 text-blue-500" />
+          <h1 className="text-5xl font-black text-slate-100 tracking-tight">
+            NFL GM Simulator
+          </h1>
+        </div>
+
+        {/* Description */}
+        <p className="text-slate-300 text-xl md:text-2xl leading-relaxed max-w-3xl font-light">
+          Welcome to the AI-powered NFL Trade Viability Analyzer! Evaluate proposed NFL player trades, analyze salary cap impacts, and inspect positional value using local LLM intelligence.
+        </p>
+
+        {/* How-to Cards with Larger Text */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left w-full pt-6">
+          <div className="bg-slate-800/90 border border-slate-700 p-8 rounded-2xl shadow-lg">
+            <h3 className="font-extrabold text-blue-400 text-xl mb-3">1. Pick Teams</h3>
+            <p className="text-base text-slate-200 leading-relaxed font-normal">
+              Select two different NFL franchises involved in the trade package.
+            </p>
+          </div>
+          <div className="bg-slate-800/90 border border-slate-700 p-8 rounded-2xl shadow-lg">
+            <h3 className="font-extrabold text-blue-400 text-xl mb-3">2. Build Assets</h3>
+            <p className="text-base text-slate-200 leading-relaxed font-normal">
+              Add key roster players and compare cap hits for both sides.
+            </p>
+          </div>
+          <div className="bg-slate-800/90 border border-slate-700 p-8 rounded-2xl shadow-lg">
+            <h3 className="font-extrabold text-blue-400 text-xl mb-3">3. Stream Verdict</h3>
+            <p className="text-base text-slate-200 leading-relaxed font-normal">
+              Get instant AI feedback on financial viability and final trade approval.
+            </p>
+          </div>
+        </div>
+
+        {/* Description */}
+        <p className="text-slate-300 text-xl md:text-2xl leading-relaxed max-w-3xl font-light">
+          With this application, we aim to show a general audience what kinds of difficult decisions NFL General Managers have to make, and how much time and consideration goes into their work. We hope you enjoy!
+        </p>
+
+        {/* Action Button */}
+        <div className="pt-6">
+          <button
+            type="button"
+            onClick={() => setShowLanding(false)}
+            className="flex items-center gap-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xl px-10 py-4 rounded-2xl transition-all shadow-xl hover:scale-105 active:scale-95 cursor-pointer"
+          >
+            <Sparkles className="w-6 h-6" />
+            Get Started!
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
       <header className="flex justify-between items-center border-b border-slate-800 pb-4">
@@ -237,9 +298,21 @@ if (contentType.includes('application/json')) {
           </div>
           <div
             id="verdict-analysis"
-            className="text-slate-300 text-sm whitespace-pre-wrap leading-relaxed"
+            className="text-slate-300 text-sm leading-relaxed space-y-3"
           >
-            {verdict.analysis || (loading ? 'Generating live analysis...' : '')}
+            {verdict.analysis ? (
+              <ReactMarkdown
+                components={{
+                  h3: ({ node, ...props }) => (
+                    <h3 className="text-lg font-bold text-slate-100 mt-4 mb-1" {...props} />
+                  ),
+                }}
+              >
+                {verdict.analysis}
+              </ReactMarkdown>
+            ) : (
+              loading ? 'Generating live analysis...' : ''
+            )}
           </div>
         </div>
       )}
