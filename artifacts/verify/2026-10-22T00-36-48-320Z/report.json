@@ -1,0 +1,27 @@
+{
+  "result": "incomplete",
+  "runDir": "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T00-36-48-320Z",
+  "checks": [
+    "App heading rendered",
+    "Analyze disabled before assets are selected",
+    "Both roster selectors open",
+    "Analyze disabled without a player"
+  ],
+  "screenshots": [
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T00-36-48-320Z/01-empty.png",
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T00-36-48-320Z/02-teams.png",
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T00-36-48-320Z/failure.png"
+  ],
+  "browserErrors": [],
+  "tradeResponses": [],
+  "doctor": {
+    "api": "http://127.0.0.1:8000",
+    "ui": "http://127.0.0.1:5173",
+    "ollamaModel": "llama3.2:1b",
+    "managedPids": [
+      68259,
+      68260
+    ]
+  },
+  "error": "TypeError: Cannot read properties of null (reading 'includes')\n    at run (file:///Users/alex/Desktop/moneyball/.codex/skills/verify/scripts/verify.mjs:257:34)"
+}

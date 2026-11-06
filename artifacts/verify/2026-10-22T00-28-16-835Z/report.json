@@ -1,0 +1,22 @@
+{
+  "result": "incomplete",
+  "runDir": "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T00-28-16-835Z",
+  "checks": [
+    "App heading rendered"
+  ],
+  "screenshots": [
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T00-28-16-835Z/failure.png"
+  ],
+  "browserErrors": [],
+  "tradeResponses": [],
+  "doctor": {
+    "api": "http://127.0.0.1:8000",
+    "ui": "http://127.0.0.1:5173",
+    "ollamaModel": "llama3.2:1b",
+    "managedPids": [
+      68097,
+      68098
+    ]
+  },
+  "error": "Error: Uncaught\n    at Cdp.evaluate (file:///Users/alex/Desktop/moneyball/.codex/skills/verify/scripts/verify.mjs:130:40)\n    at async run (file:///Users/alex/Desktop/moneyball/.codex/skills/verify/scripts/verify.mjs:247:11)"
+}

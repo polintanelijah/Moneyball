@@ -1,0 +1,36 @@
+{
+  "result": "incomplete",
+  "runDir": "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T01-05-46-071Z",
+  "checks": [
+    "App heading rendered",
+    "Analyze disabled before assets are selected",
+    "Both roster selectors open",
+    "Analyze disabled without a player",
+    "Detroit player appears in outgoing assets",
+    "Detroit projected cap updates when sending Amon-Ra",
+    "Denver projected cap updates when receiving Amon-Ra",
+    "Analyze enabled with a player",
+    "Denver player appears in outgoing assets",
+    "Detroit projected cap includes both sides",
+    "Denver projected cap includes both sides"
+  ],
+  "screenshots": [
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T01-05-46-071Z/01-empty.png",
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T01-05-46-071Z/02-teams.png",
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T01-05-46-071Z/03-player-a.png",
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T01-05-46-071Z/04-two-sided-trade.png",
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T01-05-46-071Z/failure.png"
+  ],
+  "browserErrors": [],
+  "tradeResponses": [],
+  "doctor": {
+    "api": "http://127.0.0.1:8000",
+    "ui": "http://127.0.0.1:5173",
+    "ollamaModel": "llama3.2:1b",
+    "managedPids": [
+      68477,
+      68478
+    ]
+  },
+  "error": "Error: Missing clickable control button[aria-label=\"Remove Amon-Ra St. Brown from Team A\"]\n    at assert (file:///Users/alex/Desktop/moneyball/.codex/skills/verify/scripts/verify.mjs:17:25)\n    at Cdp.click (file:///Users/alex/Desktop/moneyball/.codex/skills/verify/scripts/verify.mjs:145:5)\n    at async run (file:///Users/alex/Desktop/moneyball/.codex/skills/verify/scripts/verify.mjs:269:5)"
+}

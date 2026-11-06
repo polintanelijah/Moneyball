@@ -1,0 +1,26 @@
+{
+  "result": "incomplete",
+  "runDir": "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T00-51-53-202Z",
+  "checks": [
+    "App heading rendered",
+    "Analyze disabled before assets are selected"
+  ],
+  "screenshots": [
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T00-51-53-202Z/01-empty.png",
+    "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T00-51-53-202Z/failure.png"
+  ],
+  "browserErrors": [
+    "Uncaught"
+  ],
+  "tradeResponses": [],
+  "doctor": {
+    "api": "http://127.0.0.1:8000",
+    "ui": "http://127.0.0.1:5173",
+    "ollamaModel": "llama3.2:1b",
+    "managedPids": [
+      68334,
+      68335
+    ]
+  },
+  "error": "Error: Timed out waiting for selection DET\n    at waitFor (file:///Users/alex/Desktop/moneyball/.codex/skills/verify/scripts/verify.mjs:37:9)\n    at async Cdp.choose (file:///Users/alex/Desktop/moneyball/.codex/skills/verify/scripts/verify.mjs:162:7)\n    at async run (file:///Users/alex/Desktop/moneyball/.codex/skills/verify/scripts/verify.mjs:250:5)"
+}

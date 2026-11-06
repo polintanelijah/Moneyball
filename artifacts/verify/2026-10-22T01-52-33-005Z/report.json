@@ -1,0 +1,9 @@
+{
+  "result": "incomplete",
+  "runDir": "/Users/alex/Desktop/moneyball/artifacts/verify/2026-10-22T01-52-33-005Z",
+  "checks": [],
+  "screenshots": [],
+  "browserErrors": [],
+  "tradeResponses": [],
+  "error": "Error: Timed out waiting for usable app and Ollama\n    at waitFor (file:///Users/alex/Desktop/moneyball/.codex/skills/verify/scripts/verify.mjs:37:9)\n    at async run (file:///Users/alex/Desktop/moneyball/.codex/skills/verify/scripts/verify.mjs:227:5)"
+}

@@ -1,8 +1,8 @@
 # FastAPI + Ollama backend
 
 This is a small local API that sends trade data from the React frontend to
-Ollama. It uses `llama3.2:1b` by default, which is a lightweight model suitable
-for an 8 GB MacBook Air.
+Ollama. It uses `llama3.1:8b` by default, which is a model suitable
+for an 16 GB Dell.
 
 ## One-time setup
 
@@ -10,7 +10,7 @@ for an 8 GB MacBook Air.
 2. Download the model:
 
    ```bash
-   ollama pull llama3.2:1b
+   ollama pull llama3.1:8b
    ```
 
 3. From the `backend` directory, create an environment and install packages:
@@ -39,10 +39,3 @@ npm run dev
 
 Open the URL shown by Vite, choose two teams and at least one player, then click
 **Analyze Trade Viability**.
-
-To use another installed Ollama model, set `OLLAMA_MODEL` before starting the
-API, for example:
-
-```bash
-OLLAMA_MODEL=llama3.2:3b uvicorn main:app --reload
-```
