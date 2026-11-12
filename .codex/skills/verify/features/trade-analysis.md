@@ -19,10 +19,10 @@ Preconditions: Ollama serves `llama3.2:1b`; the verification-owned API and UI ar
 
 - Run `node .codex/skills/verify/scripts/verify.mjs all`.
 - The driver clicks `#analyze-trade`, captures `06-streaming.png`, waits for `#verdict-status` to read `Complete`, and captures `07-complete.png`.
-- It records the `/api/trade` HTTP response and rendered verdict in `report.json`. Compare the prose to the WR-for-CB swap and the displayed numbers; report false positions, trade directions, or cap claims as a feature failure. The backend and Chrome logs remain beside the screenshots.
+- It records the `/api/trade` HTTP response and rendered verdict in `report.json`. Compare the prose to the chosen players and teams; report false positions, trade directions, or invented cap claims as a feature failure. The backend and Chrome logs remain beside the screenshots.
 
 ## Gotchas
 
 - Local model generation can take over a minute. Wait for the status, not a fixed delay.
-- A passing response proves the live Ollama path, but the underlying player/cap numbers remain mock data.
+- A passing response proves the live Ollama path. Player names and teams come from the 2026 SQLite roster; cap figures remain unavailable until contract and team cap data is loaded.
 - If a live model fails, report that failure. Do not replace it with a stubbed verdict.

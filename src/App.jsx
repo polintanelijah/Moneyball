@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import TeamPanel from './components/TeamPanel';
-import { NFL_TEAMS, MOCK_PLAYERS } from './data/mockData';
 import { ArrowRightLeft, Sparkles } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { readTradeStream } from './utils/tradeStream';
 
 export default function App() {
+  const [teams, setTeams] = useState([]);
+  const [players, setPlayers] = useState([]);
+  const [catalogLoading, setCatalogLoading] = useState(true);
+  const [catalogError, setCatalogError] = useState(null);
   const [teamAId, setTeamAId] = useState('');
   const [teamBId, setTeamBId] = useState('');
   const [teamAPlayers, setTeamAPlayers] = useState([]);
@@ -13,15 +16,48 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [verdict, setVerdict] = useState(null);
 
-  const availableTeamAPlayers = MOCK_PLAYERS.filter(p => p.team === teamAId && !teamAPlayers.some(tp => tp.id === p.id));
-  const availableTeamBPlayers = MOCK_PLAYERS.filter(p => p.team === teamBId && !teamBPlayers.some(tp => tp.id === p.id));
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadCatalog() {
+      try {
+        const response = await fetch('/api/catalog', { signal: controller.signal });
+        if (!response.ok) throw new Error('The team and player catalog could not be loaded.');
+        const catalog = await response.json();
+        setTeams(catalog.teams);
+        setPlayers(catalog.players);
+      } catch (error) {
+        if (!controller.signal.aborted) setCatalogError(error.message);
+      } finally {
+        if (!controller.signal.aborted) setCatalogLoading(false);
+      }
+    }
+
+    loadCatalog();
+    return () => controller.abort();
+  }, []);
+
+  const availableTeamAPlayers = players.filter(p => p.team === teamAId && !teamAPlayers.some(tp => tp.id === p.id));
+  const availableTeamBPlayers = players.filter(p => p.team === teamBId && !teamBPlayers.some(tp => tp.id === p.id));
+
+  const selectTeamA = (id) => {
+    setTeamAId(id);
+    setTeamAPlayers([]);
+    setVerdict(null);
+  };
+
+  const selectTeamB = (id) => {
+    setTeamBId(id);
+    setTeamBPlayers([]);
+    setVerdict(null);
+  };
 
   const handleAnalyzeTrade = async () => {
     setLoading(true);
     setVerdict(null);
 
-    const teamA = NFL_TEAMS.find(team => team.id === teamAId);
-    const teamB = NFL_TEAMS.find(team => team.id === teamBId);
+    const teamA = teams.find(team => team.id === teamAId);
+    const teamB = teams.find(team => team.id === teamBId);
 
     try {
       const response = await fetch('/api/trade', {
@@ -66,12 +102,19 @@ export default function App() {
         </div>
       </header>
 
+      {catalogLoading && <p role="status" className="text-sm text-slate-400">Loading teams and players...</p>}
+      {catalogError && <p role="alert" className="text-sm text-red-400">{catalogError} Make sure the FastAPI backend is running on port 8000.</p>}
+      {!catalogLoading && !catalogError && players.length === 0 && (
+        <p role="status" className="text-sm text-amber-300">The database has no players yet. Import a roster to add player choices.</p>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <TeamPanel 
           label="Team A"
-          teams={NFL_TEAMS}
+          teams={teams}
           selectedTeamId={teamAId}
-          onSelectTeam={setTeamAId}
+          onSelectTeam={selectTeamA}
+          disabled={catalogLoading || Boolean(catalogError)}
           availablePlayers={availableTeamAPlayers}
           selectedPlayers={teamAPlayers}
           onAddPlayer={(p) => setTeamAPlayers([...teamAPlayers, p])}
@@ -81,9 +124,10 @@ export default function App() {
 
         <TeamPanel 
           label="Team B"
-          teams={NFL_TEAMS}
+          teams={teams}
           selectedTeamId={teamBId}
-          onSelectTeam={setTeamBId}
+          onSelectTeam={selectTeamB}
+          disabled={catalogLoading || Boolean(catalogError)}
           availablePlayers={availableTeamBPlayers}
           selectedPlayers={teamBPlayers}
           onAddPlayer={(p) => setTeamBPlayers([...teamBPlayers, p])}
