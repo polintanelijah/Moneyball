@@ -54,7 +54,7 @@ class TradeStreamTests(unittest.IsolatedAsyncioTestCase):
             "teamAPlayers": [{"id": "1", "name": "Player A", "team": "DET", "position": "WR", "capHit": 1000000}],
             "teamBPlayers": [],
         }
-        with patch.object(main, "stream_trade", fake_stream):
+        with patch.object(main, "find_contracts", return_value=[]), patch.object(main, "stream_trade", fake_stream):
             async with httpx.AsyncClient(transport=httpx.ASGITransport(app=main.app), base_url="http://test") as client:
                 response = await client.post("/api/trade", json=request)
 
@@ -64,6 +64,37 @@ class TradeStreamTests(unittest.IsolatedAsyncioTestCase):
             [json.loads(line) for line in response.text.splitlines()],
             [{"type": "delta", "content": "Accept"}, {"type": "done"}],
         )
+
+    async def test_trade_prompt_uses_retrieved_contract_without_treating_apy_as_cap_hit(self):
+        async def fake_stream(prompt):
+            self.assertIn("Total value: $12.00 million", prompt)
+            self.assertIn("APY is not the current-year cap hit", prompt)
+            yield {"type": "done"}
+
+        request = {
+            "teamA": {"id": "DET", "name": "Detroit Lions", "capSpace": None},
+            "teamB": {"id": "DEN", "name": "Denver Broncos", "capSpace": None},
+            "teamAPlayers": [{"id": "1", "name": "Player A", "team": "DET", "position": "WR", "capHit": None}],
+            "teamBPlayers": [],
+        }
+        with patch.object(main, "find_contracts", return_value=["Player: Player A. Total value: $12.00 million."]), patch.object(main, "stream_trade", fake_stream):
+            async with httpx.AsyncClient(transport=httpx.ASGITransport(app=main.app), base_url="http://test") as client:
+                response = await client.post("/api/trade", json=request)
+
+        self.assertEqual([json.loads(line) for line in response.text.splitlines()], [{"type": "done"}])
+
+    async def test_missing_contract_store_returns_stream_error(self):
+        request = {
+            "teamA": {"id": "DET", "name": "Detroit Lions", "capSpace": None},
+            "teamB": {"id": "DEN", "name": "Denver Broncos", "capSpace": None},
+            "teamAPlayers": [], "teamBPlayers": [],
+        }
+        with patch.object(main, "find_contracts", side_effect=FileNotFoundError("store missing")), patch.object(main, "stream_trade") as stream:
+            async with httpx.AsyncClient(transport=httpx.ASGITransport(app=main.app), base_url="http://test") as client:
+                response = await client.post("/api/trade", json=request)
+
+        self.assertEqual(json.loads(response.text), {"type": "error", "message": "Contract lookup failed: store missing"})
+        stream.assert_not_called()
 
 
 if __name__ == "__main__":
