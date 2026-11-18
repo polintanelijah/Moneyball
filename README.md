@@ -1,26 +1,15 @@
-# NFL GM Simulator (Team Moneyball)
+# NFL GM Simulator
 
-This repository contains the CSE 5914 Capstone project for Team Moneyball. The codebase is structured as a monorepo to separate engineering tasks across three distinct functional layers: Frontend (React), Backend (FastAPI + Ollama), and Data (Python/SQLite).
+The React frontend loads teams and players through the FastAPI backend, then
+sends a proposed trade to a local Ollama model for analysis. The checked-in
+SQLite database contains a 2026 NFL roster snapshot. Salary cap data is not
+included, so the app marks cap figures as unavailable instead of estimating them.
 
-*Note: As of Timebox 3, the data layer has been upgraded from mock data to real historical NFL contracts, integrated with a persistent ChromaDB vector store for LLM RAG.*
+The roster came from [nflverse's 2026 season roster CSV](https://github.com/nflverse/nflverse-data/releases/download/rosters/roster_2026.csv),
+retrieved November 10, 2026. It includes active, reserve, inactive, and practice
+squad players, and excludes players marked cut, retired, or traded. nflverse data
+is [licensed CC BY 4.0](https://github.com/nflverse/nflverse-data). To import
+new roster rows, run `python3 data/import_roster.py` from the project root. The script
+also accepts `--file path/to/roster.csv` for a local copy.
 
----
-
-## Project Architecture
-
-- **`frontend/`**: React + Vite application handling the presentation layer, trade ledger, and user interface.
-- **`backend/`**: FastAPI + LlamaIndex orchestration layer managing local Ollama LLM requests, cap math, and trade logic. (See `backend/readme.md` for setup and run instructions).
-- **`data/`**: Python ETL pipeline for extracting, transforming, and loading NFL contract and performance data into SQLite and ChromaDB.
-
----
-
-## Data Team Workflow 
-
-All database generation and embedding scripts live in the `data/` directory. To run these scripts without conflicting with global system packages, you must use an isolated Python virtual environment.
-
-### 1. Environment Setup
-Navigate to the data directory and initialize the virtual environment:
-```bash
-cd data
-python3 -m venv venv
-source venv/bin/activate
+See [backend/readme.md](backend/readme.md) for setup and run instructions.

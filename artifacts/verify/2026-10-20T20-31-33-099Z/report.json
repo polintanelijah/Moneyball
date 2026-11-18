@@ -1,0 +1,56 @@
+{
+  "result": "pass",
+  "runDir": "/Applications/work/classes/capstone/Moneyball/artifacts/verify/2026-10-20T20-31-33-099Z",
+  "checks": [
+    "App heading rendered",
+    "Analyze disabled before assets are selected",
+    "Both roster selectors open",
+    "Analyze disabled without a player",
+    "Detroit player appears in outgoing assets",
+    "Detroit projected cap updates when sending Amon-Ra",
+    "Denver projected cap updates when receiving Amon-Ra",
+    "Analyze enabled with a player",
+    "Denver player appears in outgoing assets",
+    "Detroit projected cap includes both sides",
+    "Denver projected cap includes both sides",
+    "Removing Detroit player removes the asset",
+    "Detroit cap recalculates after removal",
+    "Denver cap recalculates after removal",
+    "Live Ollama analysis completed (got Complete: Executive Verdict\n\nVERDICT: ACCEPTABLE\n\nSalary Cap Impact\nDetroit Lions: The immediate cap hits from Amon-Ra St. Brown ($4,860,000) and Patrick Surtain II ($6,710,000) are substantial, but the Lions' )",
+    "Live analysis contains a substantial verdict",
+    "Browser received successful trade stream",
+    "Backend connection failure is explained in the UI",
+    "No browser exceptions or console errors: "
+  ],
+  "screenshots": [
+    "/Applications/work/classes/capstone/Moneyball/artifacts/verify/2026-10-20T20-31-33-099Z/01-empty.png",
+    "/Applications/work/classes/capstone/Moneyball/artifacts/verify/2026-10-20T20-31-33-099Z/02-teams.png",
+    "/Applications/work/classes/capstone/Moneyball/artifacts/verify/2026-10-20T20-31-33-099Z/03-player-a.png",
+    "/Applications/work/classes/capstone/Moneyball/artifacts/verify/2026-10-20T20-31-33-099Z/04-two-sided-trade.png",
+    "/Applications/work/classes/capstone/Moneyball/artifacts/verify/2026-10-20T20-31-33-099Z/05-removed-player.png",
+    "/Applications/work/classes/capstone/Moneyball/artifacts/verify/2026-10-20T20-31-33-099Z/06-streaming.png",
+    "/Applications/work/classes/capstone/Moneyball/artifacts/verify/2026-10-20T20-31-33-099Z/07-complete.png",
+    "/Applications/work/classes/capstone/Moneyball/artifacts/verify/2026-10-20T20-31-33-099Z/08-error.png"
+  ],
+  "browserErrors": [],
+  "tradeResponses": [
+    {
+      "status": 200,
+      "url": "http://127.0.0.1:5173/api/trade"
+    },
+    {
+      "status": 200,
+      "url": "http://127.0.0.1:5173/api/trade"
+    }
+  ],
+  "doctor": {
+    "api": "http://127.0.0.1:8000",
+    "ui": "http://127.0.0.1:5173",
+    "ollamaModel": "llama3.2:1b",
+    "managedPids": [
+      34075,
+      34076
+    ]
+  },
+  "verdict": "Executive Verdict\n\nVERDICT: ACCEPTABLE\n\nSalary Cap Impact\nDetroit Lions: The immediate cap hits from Amon-Ra St. Brown ($4,860,000) and Patrick Surtain II ($6,710,000) are substantial, but the Lions' current cap space of $18,400,000 is sufficient to absorb these additions without significant long-term financial strain.\nDenver Broncos: The immediate cap hits from Patrick Surtain II ($6,710,000) and Amon-Ra St. Brown ($4,860,000) are also substantial, but the Broncos' current cap space of $5,200,000 is slightly more limited.\nPlayer & Positional Value\nAmon-Ra St. Brown: As a talented wide receiver with a strong track record, St. Brown's value lies in his ability to create separation and make plays down the field.\nPatrick Surtain II: A promising cornerback with upside, Surtain II is a key piece for the Broncos' defense, but his long-term potential is still uncertain.\nBenefits & Risks\nDetroit Lions Benefits:\nSt. Brown's presence can create matchup problems for opposing defenses.\nHis veteran leadership and experience can help stabilize the team's offense.\nDetroit Lions Risks:\nThe trade may lead to a significant increase in salary cap hits, potentially straining the Lions' finances.\nSt. Brown's contract is relatively short-term, which could impact his long-term value.\nFinal Conclusion\n\nThe proposed trade offers a balanced exchange of players and assets between the Detroit Lions and Denver Broncos. While it presents some risks for both teams, the immediate cap hits are manageable, and the benefits of having two talented wide receivers on the roster outweigh the drawbacks."
+}

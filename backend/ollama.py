@@ -1,132 +1,73 @@
 import os
 import json
+
 import httpx
 
-OLLAMA_URL = os.getenv(
-    "OLLAMA_URL",
-    "http://127.0.0.1:11434"
-).rstrip("/")
+OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.2:1b")
 
 
-async def analyze_trade(payload):
-
-    # Convert the incoming data into a valid Ollama request
-    if isinstance(payload, dict) and "model" in payload and "messages" in payload:
-        request_payload = {
-            **payload,
-            "stream": False
-        }
-    else:
-        prompt = (
-            payload
-            if isinstance(payload, str)
-            else json.dumps(payload)
-        )
-
-        request_payload = {
-            "model": "llama3.1:8b",
-            "messages": [
-                {
-                    "role": "system",
-                    "content": (
-                        "You are an expert NFL general manager. "
-                        "Evaluate trades based on real-world player value, "
-                        "team needs, salary cap implications, "
-                        "and fairness. Provide a detailed analysis "
-                        "with a clear final recommendation."
-                    )
-                },
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ],
-            "stream": False,
-            "options": {
-                "num_predict": 512,
-                "temperature": 0.0
+async def stream_trade(prompt: str):
+    payload = {
+        "model": OLLAMA_MODEL,
+        "stream": True,
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are an NFL trade analysis assistant."
+            },
+            {
+                "role": "user",
+                "content": prompt
             }
+
+        ],
+        "options": {
+            "temperature": 0.0
         }
+    }
 
     try:
-        async with httpx.AsyncClient(timeout=120) as client:
-            response = await client.post(
-                f"{OLLAMA_URL}/api/chat",
-                json=request_payload
-            )
-
-            response.raise_for_status()
-            data = response.json()
-
-            return data["message"]["content"]
-
-    except httpx.ConnectError as e:
-        return f"Could not reach Ollama: {e}"
-
-    except httpx.TimeoutException:
-        return "Could not reach Ollama: Request timed out."
-
-    except httpx.HTTPStatusError as e:
-        print(
-            f"Ollama error {e.response.status_code}: "
-            f"{e.response.text}",
-            flush=True
-        )
-
-        return (
-            f"Error: Ollama returned HTTP "
-            f"{e.response.status_code}: {e.response.text}"
-        )
-async def analyze_trade_stream(prompt):
-    if isinstance(prompt, dict) and "messages" in prompt:
-        payload = {
-            **prompt,
-            "model": prompt.get("model", "llama3.1:8b"),
-            "stream": True
-        }
-    else:
-        payload = {
-            "model": "llama3.1:8b",
-            "messages": [
-                {
-                    "role": "user",
-                    "content": prompt if isinstance(prompt, str)
-                               else json.dumps(prompt)
-                }
-            ],
-            "stream": True
-        }
-
-    try:
-        async with httpx.AsyncClient(timeout=120) as client:
-            async with client.stream(
-                "POST",
-                f"{OLLAMA_URL}/api/chat",
-                json=payload
-            ) as response:
-
-                response.raise_for_status()
+        async with httpx.AsyncClient(timeout=120.0) as client:
+            async with client.stream("POST", f"{OLLAMA_URL}/api/chat", json=payload) as response:
+                if response.is_error:
+                    await response.aread()
+                    response.raise_for_status()
 
                 async for line in response.aiter_lines():
                     if not line:
                         continue
 
-                    data = json.loads(line)
-
-                    if data.get("error"):
-                        yield f"Error: {data['error']}"
+                    event = json.loads(line)
+                    if not isinstance(event, dict):
+                        raise ValueError("Invalid Ollama response")
+                    if event.get("error"):
+                        yield {"type": "error", "message": str(event["error"])}
                         return
 
-                    token = data.get("message", {}).get("content", "")
+                    message = event.get("message") or {}
+                    if not isinstance(message, dict):
+                        raise ValueError("Invalid Ollama response")
+                    content = message.get("content", "")
+                    if not isinstance(content, str):
+                        raise ValueError("Invalid Ollama response")
+                    if content:
+                        yield {"type": "delta", "content": content}
+                    if event.get("done"):
+                        yield {"type": "done"}
+                        return
 
-                    if token:
-                        yield token
-
-    except httpx.ConnectError as e:
-        yield f"Could not reach Ollama: {e}"
-
-    except httpx.TimeoutException:
-        yield "Could not reach Ollama: Request timed out."
-
-    except httpx.HTTPStatusError as e:
-        yield f"Error: Ollama returned HTTP {e.response.status_code}"
+                yield {"type": "error", "message": "Ollama ended the response before completing the analysis."}
+    except httpx.HTTPStatusError as exc:
+        detail = "Ollama could not analyze the trade."
+        try:
+            body = exc.response.json()
+            if isinstance(body, dict):
+                detail = body.get("error", detail)
+        except ValueError:
+            pass
+        yield {"type": "error", "message": detail}
+    except httpx.RequestError:
+        yield {"type": "error", "message": "Could not reach Ollama. Make sure Ollama is running."}
+    except (ValueError, TypeError):
+        yield {"type": "error", "message": "Ollama returned an invalid streaming response."}

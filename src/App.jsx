@@ -1,55 +1,17 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import TeamPanel from './components/TeamPanel';
-import { NFL_TEAMS, MOCK_PLAYERS } from './data/mockData';
 import { ArrowRightLeft, Sparkles } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import { readTradeStream } from './utils/tradeStream';
 
-// If the Vite dev server proxies /api to FastAPI, this relative path works
-// without cross-origin requests. Override with VITE_TRADE_API_URL if needed.
 const TRADE_API_URL = import.meta.env.VITE_TRADE_API_URL || '/api/trade';
-
-function errorFromResponse(body, status) {
-  let message = body.trim();
-
-  try {
-    const parsed = JSON.parse(body);
-    message = parsed.detail || parsed.error || parsed.message || message;
-    if (typeof message !== 'string') message = JSON.stringify(message);
-  } catch {
-    // The backend can also return a plain-text error.
-  }
-
-  return new Error(message || `Trade analysis failed (HTTP ${status}).`);
-}
-
-// A FastAPI StreamingResponse with media_type='text/plain' streams raw
-// Ollama tokens. Update the React view after every chunk, not just at the end.
-async function readTradeStream(body, onUpdate) {
-  if (!body) throw new Error('The backend returned no streaming response.');
-
-  const reader = body.getReader();
-  const decoder = new TextDecoder();
-  let text = '';
-
-  try {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      text += decoder.decode(value, { stream: true });
-      onUpdate(text);
-    }
-    text += decoder.decode();
-    onUpdate(text);
-  } finally {
-    reader.releaseLock();
-  }
-
-  return text;
-}
 
 export default function App() {
   const [showLanding, setShowLanding] = useState(true);
+  const [teams, setTeams] = useState([]);
+  const [players, setPlayers] = useState([]);
+  const [catalogLoading, setCatalogLoading] = useState(true);
+  const [catalogError, setCatalogError] = useState(null);
   const [teamAId, setTeamAId] = useState('');
   const [teamBId, setTeamBId] = useState('');
   const [teamAPlayers, setTeamAPlayers] = useState([]);
@@ -57,160 +19,116 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [verdict, setVerdict] = useState(null);
 
-  const availableTeamAPlayers = MOCK_PLAYERS.filter(
-    (p) => p.team === teamAId && !teamAPlayers.some((selected) => selected.id === p.id)
-  );
-  const availableTeamBPlayers = MOCK_PLAYERS.filter(
-    (p) => p.team === teamBId && !teamBPlayers.some((selected) => selected.id === p.id)
-  );
+  useEffect(() => {
+    const controller = new AbortController();
 
-  const handleSelectTeamA = (id) => {
+    async function loadCatalog() {
+      try {
+        const response = await fetch('/api/catalog', { signal: controller.signal });
+        if (!response.ok) throw new Error('The team and player catalog could not be loaded.');
+        const catalog = await response.json();
+        setTeams(catalog.teams);
+        setPlayers(catalog.players);
+      } catch (error) {
+        if (!controller.signal.aborted) setCatalogError(error.message);
+      } finally {
+        if (!controller.signal.aborted) setCatalogLoading(false);
+      }
+    }
+
+    loadCatalog();
+    return () => controller.abort();
+  }, []);
+
+  const availableTeamAPlayers = players.filter(p => p.team === teamAId && !teamAPlayers.some(tp => tp.id === p.id));
+  const availableTeamBPlayers = players.filter(p => p.team === teamBId && !teamBPlayers.some(tp => tp.id === p.id));
+
+  const selectTeamA = (id) => {
     setTeamAId(id);
-    setTeamAPlayers([]); // Never retain players from a previously selected franchise.
+    setTeamAPlayers([]);
     setVerdict(null);
   };
 
-  const handleSelectTeamB = (id) => {
+  const selectTeamB = (id) => {
     setTeamBId(id);
     setTeamBPlayers([]);
     setVerdict(null);
   };
 
   const handleAnalyzeTrade = async () => {
-    const teamA = NFL_TEAMS.find((team) => team.id === teamAId);
-    const teamB = NFL_TEAMS.find((team) => team.id === teamBId);
-    if (!teamA || !teamB || teamAId === teamBId ||
-        (teamAPlayers.length === 0 && teamBPlayers.length === 0) || loading) {
-      return;
-    }
-
+    if (!teamAId || !teamBId || teamAId === teamBId ||
+        (teamAPlayers.length === 0 && teamBPlayers.length === 0) || loading) return;
     setLoading(true);
-    // The verifier looks for this state *before* Ollama finishes responding.
-    setVerdict({ status: 'Streaming', analysis: '' });
+    setVerdict(null);
+
+    const teamA = teams.find(team => team.id === teamAId);
+    const teamB = teams.find(team => team.id === teamBId);
 
     try {
       const response = await fetch(TRADE_API_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'text/plain' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ teamA, teamB, teamAPlayers, teamBPlayers }),
       });
 
       if (!response.ok) {
-        throw errorFromResponse(await response.text(), response.status);
+        const data = await response.json();
+        throw new Error(typeof data.detail === 'string' ? data.detail : 'The trade analysis failed.');
       }
 
-      const contentType = response.headers.get('content-type') || '';
-
-let analysis;
-
-if (contentType.includes('application/json')) {
-  const data = await response.json();
-  analysis = data.analysis ?? data.error ?? JSON.stringify(data);
-} else {
-  analysis = await readTradeStream(response.body, (partialAnalysis) => {
-    setVerdict({ status: 'Streaming', analysis: partialAnalysis });
-  });
-}
-
-      if (!analysis.trim()) {
-        throw new Error('The backend returned an empty analysis.');
-      }
-      // Some streaming backends report a generation failure in the response
-      // body even after sending HTTP 200.
-  
-      if (/^\s*(?:error\s*:|could not reach ollama\b|ollama returned http\b)/i.test(analysis)) {
-  throw new Error(analysis.trim());
-}
-
-      setVerdict({ status: 'Complete', analysis });
-    }  catch (error) {
-  const message = error instanceof Error
-    ? error.message
-    : String(error);
-
-  const isConnectionError =
-    /ollama|connect|refused|fetch failed|network|HTTP 50\d|internal server error/i.test(message);
-
-  const displayMessage = isConnectionError &&
-    !message.includes('Could not reach Ollama')
-      ? `Could not reach Ollama: ${message}`
-      : message;
-
-  setVerdict({
-    status: 'Error',
-    analysis: displayMessage
-  });
-} finally {
-  setLoading(false);
-}
+      setVerdict({ status: 'Streaming', analysis: '' });
+      await readTradeStream(response.body, (content) => {
+        setVerdict(previous => ({ status: 'Streaming', analysis: previous.analysis + content }));
+      });
+      setVerdict(previous => ({ ...previous, status: 'Complete' }));
+    } catch (error) {
+      const message = error instanceof TypeError
+        ? 'Could not reach the FastAPI backend. Make sure it is running on port 8000.'
+        : error.message;
+      setVerdict(previous => ({
+        status: 'Error',
+        analysis: previous?.analysis
+          ? `${previous.analysis}\n\n**Analysis stopped:** ${message}`
+          : message,
+      }));
+    } finally {
+      setLoading(false);
+    }
   };
-
-  const canAnalyze = Boolean(
-    teamAId && teamBId && teamAId !== teamBId &&
-    (teamAPlayers.length > 0 || teamBPlayers.length > 0) && !loading
-  );
-
-  const verdictClass = verdict?.status === 'Complete'
-    ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-    : verdict?.status === 'Error'
-      ? 'bg-red-500/20 text-red-400 border-red-500/30'
-      : 'bg-blue-500/20 text-blue-400 border-blue-500/30';
-
 
   if (showLanding) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center space-y-8 max-w-5xl mx-auto">
-        {/* Header Icon & Title */}
         <div className="flex items-center justify-center gap-4">
           <ArrowRightLeft className="w-16 h-16 text-blue-500" />
-          <h1 className="text-5xl font-black text-slate-100 tracking-tight">
-            NFL GM Simulator
-          </h1>
+          <h1 className="text-5xl font-black text-slate-100 tracking-tight">NFL GM Simulator</h1>
         </div>
-
-        {/* Description */}
         <p className="text-slate-300 text-xl md:text-2xl leading-relaxed max-w-3xl font-light">
-          Welcome to the AI-powered NFL Trade Viability Analyzer! Evaluate proposed NFL player trades, analyze salary cap impacts, and inspect positional value using local LLM intelligence.
+          Explore proposed NFL player trades and get an analysis from a local AI model.
         </p>
-
-        {/* How-to Cards with Larger Text */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left w-full pt-6">
           <div className="bg-slate-800/90 border border-slate-700 p-8 rounded-2xl shadow-lg">
             <h3 className="font-extrabold text-blue-400 text-xl mb-3">1. Pick Teams</h3>
-            <p className="text-base text-slate-200 leading-relaxed font-normal">
-              Select two different NFL franchises involved in the trade package.
-            </p>
+            <p className="text-base text-slate-200 leading-relaxed">Select two NFL franchises.</p>
           </div>
           <div className="bg-slate-800/90 border border-slate-700 p-8 rounded-2xl shadow-lg">
             <h3 className="font-extrabold text-blue-400 text-xl mb-3">2. Build Assets</h3>
-            <p className="text-base text-slate-200 leading-relaxed font-normal">
-              Add key roster players and compare cap hits for both sides.
-            </p>
+            <p className="text-base text-slate-200 leading-relaxed">Choose the players each team sends.</p>
           </div>
           <div className="bg-slate-800/90 border border-slate-700 p-8 rounded-2xl shadow-lg">
             <h3 className="font-extrabold text-blue-400 text-xl mb-3">3. Stream Verdict</h3>
-            <p className="text-base text-slate-200 leading-relaxed font-normal">
-              Get instant AI feedback on financial viability and final trade approval.
-            </p>
+            <p className="text-base text-slate-200 leading-relaxed">Read the analysis as it arrives.</p>
           </div>
         </div>
-
-        {/* Description */}
-        <p className="text-slate-300 text-xl md:text-2xl leading-relaxed max-w-3xl font-light">
-          With this application, we aim to show a general audience what kinds of difficult decisions NFL General Managers have to make, and how much time and consideration goes into their work. We hope you enjoy!
-        </p>
-
-        {/* Action Button */}
-        <div className="pt-6">
-          <button
-            type="button"
-            onClick={() => setShowLanding(false)}
-            className="flex items-center gap-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xl px-10 py-4 rounded-2xl transition-all shadow-xl hover:scale-105 active:scale-95 cursor-pointer"
-          >
-            <Sparkles className="w-6 h-6" />
-            Get Started!
-          </button>
-        </div>
+        <button
+          id="get-started"
+          type="button"
+          onClick={() => setShowLanding(false)}
+          className="flex items-center gap-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xl px-10 py-4 rounded-2xl transition-all shadow-xl hover:scale-105 active:scale-95 cursor-pointer"
+        >
+          <Sparkles className="w-6 h-6" />
+          Get Started!
+        </button>
       </div>
     );
   }
@@ -226,56 +144,49 @@ if (contentType.includes('application/json')) {
         </div>
       </header>
 
+      {catalogLoading && <p role="status" className="text-sm text-slate-400">Loading teams and players...</p>}
+      {catalogError && <p role="alert" className="text-sm text-red-400">{catalogError} Make sure the FastAPI backend is running on port 8000.</p>}
+      {!catalogLoading && !catalogError && players.length === 0 && (
+        <p role="status" className="text-sm text-amber-300">The database has no players yet. Import a roster to add player choices.</p>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <TeamPanel
-          idPrefix="team-a"
           label="Team A"
-          teams={NFL_TEAMS}
+          teams={teams}
           selectedTeamId={teamAId}
-          onSelectTeam={handleSelectTeamA}
+          onSelectTeam={selectTeamA}
+          disabled={catalogLoading || Boolean(catalogError)}
           availablePlayers={availableTeamAPlayers}
           selectedPlayers={teamAPlayers}
-          onAddPlayer={(player) => {
-            setTeamAPlayers((current) => [...current, player]);
-            setVerdict(null);
-          }}
-          onRemovePlayer={(id) => {
-            setTeamAPlayers((current) => current.filter((player) => player.id !== id));
-            setVerdict(null);
-          }}
+          onAddPlayer={(p) => { setTeamAPlayers([...teamAPlayers, p]); setVerdict(null); }}
+          onRemovePlayer={(id) => { setTeamAPlayers(teamAPlayers.filter(p => p.id !== id)); setVerdict(null); }}
           incomingPlayers={teamBPlayers}
         />
 
         <TeamPanel
-          idPrefix="team-b"
           label="Team B"
-          teams={NFL_TEAMS}
+          teams={teams}
           selectedTeamId={teamBId}
-          onSelectTeam={handleSelectTeamB}
+          onSelectTeam={selectTeamB}
+          disabled={catalogLoading || Boolean(catalogError)}
           availablePlayers={availableTeamBPlayers}
           selectedPlayers={teamBPlayers}
-          onAddPlayer={(player) => {
-            setTeamBPlayers((current) => [...current, player]);
-            setVerdict(null);
-          }}
-          onRemovePlayer={(id) => {
-            setTeamBPlayers((current) => current.filter((player) => player.id !== id));
-            setVerdict(null);
-          }}
+          onAddPlayer={(p) => { setTeamBPlayers([...teamBPlayers, p]); setVerdict(null); }}
+          onRemovePlayer={(id) => { setTeamBPlayers(teamBPlayers.filter(p => p.id !== id)); setVerdict(null); }}
           incomingPlayers={teamAPlayers}
         />
       </div>
 
       <div className="flex justify-center pt-2">
         <button
-          id="analyze-trade"
-          type="button"
-          disabled={!canAnalyze}
+          disabled={!teamAId || !teamBId || teamAId === teamBId || (teamAPlayers.length === 0 && teamBPlayers.length === 0) || loading}
           onClick={handleAnalyzeTrade}
+          id="analyze-trade"
           className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 disabled:text-slate-600 text-white font-semibold px-6 py-3 rounded-xl transition-all shadow-lg cursor-pointer disabled:cursor-not-allowed"
         >
           <Sparkles className="w-5 h-5" />
-          {loading ? 'Executing RAG Analysis...' : 'Analyze Trade Viability'}
+          {loading ? 'Analyzing Trade...' : 'Analyze Trade Viability'}
         </button>
       </div>
 
@@ -286,33 +197,17 @@ if (contentType.includes('application/json')) {
       )}
 
       {verdict && (
-        <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-xl space-y-3" aria-live="polite">
+        <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-xl space-y-3">
           <div className="flex items-center gap-2">
             <span className="text-xs uppercase tracking-wider text-slate-400">Verdict:</span>
-            <span
-              id="verdict-status"
-              className={`text-xs font-bold px-2.5 py-1 rounded-full border ${verdictClass}`}
-            >
+            <span id="verdict-status" className={`text-xs font-bold px-2.5 py-1 rounded-full border ${verdict.status === 'Error' ? 'bg-red-500/20 text-red-400 border-red-500/30' : verdict.status === 'Streaming' ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'}`}>
               {verdict.status}
             </span>
           </div>
-          <div
-            id="verdict-analysis"
-            className="text-slate-300 text-sm leading-relaxed space-y-3"
-          >
-            {verdict.analysis ? (
-              <ReactMarkdown
-                components={{
-                  h3: ({ node, ...props }) => (
-                    <h3 className="text-lg font-bold text-slate-100 mt-4 mb-1" {...props} />
-                  ),
-                }}
-              >
-                {verdict.analysis}
-              </ReactMarkdown>
-            ) : (
-              loading ? 'Generating live analysis...' : ''
-            )}
+          <div id="verdict-analysis" className="text-slate-300 text-sm leading-relaxed [&_h1]:font-bold [&_h2]:font-bold [&_h3]:font-bold [&_h3]:mt-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:my-2">
+            {verdict.analysis
+              ? <ReactMarkdown>{verdict.analysis}</ReactMarkdown>
+              : <p className="text-slate-400 italic">Waiting for the first token...</p>}
           </div>
         </div>
       )}

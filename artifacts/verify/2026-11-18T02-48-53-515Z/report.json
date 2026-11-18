@@ -1,0 +1,39 @@
+{
+  "result": "pass",
+  "runDir": "/Applications/work/classes/capstone/Moneyball/artifacts/verify/2026-11-18T02-48-53-515Z",
+  "checks": [
+    "App heading rendered",
+    "All 32 teams are selectable",
+    "Analyze disabled before assets are selected",
+    "Both roster selectors open",
+    "Both teams have full player lists",
+    "Analyze disabled without a player",
+    "Detroit player appears in outgoing assets",
+    "Unknown cap space is marked unavailable",
+    "Analyze enabled with a player",
+    "Denver player appears in outgoing assets",
+    "Denver cap space is marked unavailable",
+    "Removing Detroit player removes the asset",
+    "Seattle roster is selectable",
+    "Changing teams clears outgoing players"
+  ],
+  "screenshots": [
+    "/Applications/work/classes/capstone/Moneyball/artifacts/verify/2026-11-18T02-48-53-515Z/01-empty.png",
+    "/Applications/work/classes/capstone/Moneyball/artifacts/verify/2026-11-18T02-48-53-515Z/02-teams.png",
+    "/Applications/work/classes/capstone/Moneyball/artifacts/verify/2026-11-18T02-48-53-515Z/03-player-a.png",
+    "/Applications/work/classes/capstone/Moneyball/artifacts/verify/2026-11-18T02-48-53-515Z/04-two-sided-trade.png",
+    "/Applications/work/classes/capstone/Moneyball/artifacts/verify/2026-11-18T02-48-53-515Z/05-removed-player.png",
+    "/Applications/work/classes/capstone/Moneyball/artifacts/verify/2026-11-18T02-48-53-515Z/05-seattle-roster.png"
+  ],
+  "browserErrors": [],
+  "tradeResponses": [],
+  "doctor": {
+    "api": "http://127.0.0.1:8000",
+    "ui": "http://127.0.0.1:5173",
+    "ollamaModel": null,
+    "managedPids": [
+      3685,
+      3686
+    ]
+  }
+}

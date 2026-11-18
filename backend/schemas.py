@@ -4,7 +4,7 @@ from pydantic import BaseModel
 class Team(BaseModel):
     id: str
     name: str
-    capSpace: int
+    capSpace: float | None
 
 
 class Player(BaseModel):
@@ -12,7 +12,7 @@ class Player(BaseModel):
     name: str
     team: str
     position: str
-    capHit: int
+    capHit: float | None
 
 
 class TradeRequest(BaseModel):

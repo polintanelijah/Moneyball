@@ -1,0 +1,9 @@
+{
+  "result": "incomplete",
+  "runDir": "/Applications/work/classes/capstone/Moneyball/artifacts/verify/2026-10-20T20-24-14-484Z",
+  "checks": [],
+  "screenshots": [],
+  "browserErrors": [],
+  "tradeResponses": [],
+  "error": "TypeError [ERR_INVALID_ARG_VALUE]: The argument 'stdio' is invalid. Received WriteStream {\n  fd: null,\n  path: '/Applications/work/classes/capstone/Moneyball/artifacts/verify/2026-10-20T20-24-14-484Z/backe...\n    at node:internal/child_process:1083:13\n    at Array.reduce (<anonymous>)\n    at getValidStdio (node:internal/child_process:1010:11)\n    at ChildProcess.spawn (node:internal/child_process:363:11)\n    at spawn (node:child_process:796:9)\n    at startProcess (file:///Applications/work/classes/capstone/Moneyball/.codex/skills/verify/scripts/verify.mjs:50:17)\n    at run (file:///Applications/work/classes/capstone/Moneyball/.codex/skills/verify/scripts/verify.mjs:219:21)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)"
+}

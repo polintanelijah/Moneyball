@@ -1,0 +1,58 @@
+{
+  "result": "pass",
+  "runDir": "/Applications/work/classes/capstone/Moneyball/artifacts/verify/2026-11-18T02-49-40-045Z",
+  "checks": [
+    "App heading rendered",
+    "All 32 teams are selectable",
+    "Analyze disabled before assets are selected",
+    "Analyze disabled for the same franchise",
+    "Both roster selectors open",
+    "Both teams have full player lists",
+    "Analyze disabled without a player",
+    "Detroit player appears in outgoing assets",
+    "Unknown cap space is marked unavailable",
+    "Analyze enabled with a player",
+    "Denver player appears in outgoing assets",
+    "Denver cap space is marked unavailable",
+    "Removing Detroit player removes the asset",
+    "Seattle roster is selectable",
+    "Changing teams clears outgoing players",
+    "Live Ollama analysis completed (got Complete: Executive Verdict\n\nVERDICT: ACCEPTABLE\n\nSalary Cap Impact\nDetroit Lions: Immediate cap hit for Aamaris Brown ($0.25 million) and unknown long-term financial viability due to the cap hit of Adam Prenti)",
+    "Live analysis contains a substantial verdict",
+    "Browser received successful trade stream",
+    "Backend connection failure is explained in the UI",
+    "No browser exceptions or console errors: "
+  ],
+  "screenshots": [
+    "/Applications/work/classes/capstone/Moneyball/artifacts/verify/2026-11-18T02-49-40-045Z/01-empty.png",
+    "/Applications/work/classes/capstone/Moneyball/artifacts/verify/2026-11-18T02-49-40-045Z/02-teams.png",
+    "/Applications/work/classes/capstone/Moneyball/artifacts/verify/2026-11-18T02-49-40-045Z/03-player-a.png",
+    "/Applications/work/classes/capstone/Moneyball/artifacts/verify/2026-11-18T02-49-40-045Z/04-two-sided-trade.png",
+    "/Applications/work/classes/capstone/Moneyball/artifacts/verify/2026-11-18T02-49-40-045Z/05-removed-player.png",
+    "/Applications/work/classes/capstone/Moneyball/artifacts/verify/2026-11-18T02-49-40-045Z/05-seattle-roster.png",
+    "/Applications/work/classes/capstone/Moneyball/artifacts/verify/2026-11-18T02-49-40-045Z/06-streaming.png",
+    "/Applications/work/classes/capstone/Moneyball/artifacts/verify/2026-11-18T02-49-40-045Z/07-complete.png",
+    "/Applications/work/classes/capstone/Moneyball/artifacts/verify/2026-11-18T02-49-40-045Z/08-error.png"
+  ],
+  "browserErrors": [],
+  "tradeResponses": [
+    {
+      "status": 200,
+      "url": "http://127.0.0.1:5173/api/trade"
+    },
+    {
+      "status": 200,
+      "url": "http://127.0.0.1:5173/api/trade"
+    }
+  ],
+  "doctor": {
+    "api": "http://127.0.0.1:8000",
+    "ui": "http://127.0.0.1:5173",
+    "ollamaModel": "llama3.2:1b",
+    "managedPids": [
+      3772,
+      3773
+    ]
+  },
+  "verdict": "Executive Verdict\n\nVERDICT: ACCEPTABLE\n\nSalary Cap Impact\nDetroit Lions: Immediate cap hit for Aamaris Brown ($0.25 million) and unknown long-term financial viability due to the cap hit of Adam Prentice ($1.22 million). The Lions' current cap space is uncertain.\nDenver Broncos: Immediate cap hit for Adam Prentice ($1.22 million) and unknown long-term financial viability due to the cap hit of Aamaris Brown ($0.25 million). The Broncos' current cap space is uncertain.\nPlayer & Positional Value\nAamaris Brown: Talented cornerback with a high APY, but her contract value may not be reflective of her actual market value.\nAdam Prentice: Talented running back who could provide a significant boost to the Broncos' offense. His cap hit is relatively low compared to other running backs.\nBenefits & Risks\nDetroit Lions Benefits:\nAamaris Brown's defensive skills and experience could be valuable assets for the Lions.\nThe Lions may benefit from having a reliable cornerback in their secondary.\nDetroit Lions Risks:\nThe Lions' cap space is uncertain, which could impact their ability to sign other players or make roster moves.\nThe team may struggle to find a suitable replacement for Aamaris Brown's defensive skills.\nFinal Conclusion\n\nThe proposed trade offers the Broncos a running back and a cornerback in exchange for a cornerback. While the Broncos' cap space is uncertain, they could potentially benefit from having Adam Prentice on their roster. However, the Lions' cap space remains uncertain, which could impact their ability to sign other players or make roster moves.\n\nFinal Decision\n\nThe proposed trade is balanced and realistic, as both teams have assets that could be beneficial to each other. The Broncos may struggle with finding a suitable replacement for Aamaris Brown's defensive skills, but the Lions' cap space remains uncertain."
+}

@@ -70,9 +70,11 @@ async function stopProcess(entry) {
   }
 }
 
-async function doctor(state) {
-  const tags = await fetchJson(`${modelUrl}/api/tags`);
-  assert(tags.models?.some((model) => model.name === 'llama3.2:1b'), 'Ollama model llama3.2:1b is not installed.');
+async function doctor(state, requireModel = true) {
+  if (requireModel) {
+    const tags = await fetchJson(`${modelUrl}/api/tags`);
+    assert(tags.models?.some((model) => model.name === 'llama3.2:1b'), 'Ollama model llama3.2:1b is not installed.');
+  }
   const api = await fetchJson(`${apiUrl}/`);
   assert(api.message === 'NFL GM Simulator backend is running', 'The API on port 8000 is not this app.');
   const ui = await fetch(uiUrl, { signal: AbortSignal.timeout(2000) });
@@ -81,7 +83,7 @@ async function doctor(state) {
     assert(state.backend.child.exitCode === null, 'The managed backend exited.');
     assert(state.vite.child.exitCode === null, 'The managed frontend exited.');
   }
-  return { api: apiUrl, ui: uiUrl, ollamaModel: 'llama3.2:1b', managedPids: state ? [state.backend.child.pid, state.vite.child.pid] : [] };
+  return { api: apiUrl, ui: uiUrl, ollamaModel: requireModel ? 'llama3.2:1b' : null, managedPids: state ? [state.backend.child.pid, state.vite.child.pid] : [] };
 }
 
 class Cdp {
@@ -163,6 +165,12 @@ class Cdp {
     }
   }
 
+  async chooseValue(selector, value) {
+    const index = await this.evaluate(`Array.from(document.querySelector(${JSON.stringify(selector)}).options).findIndex(option => option.value === ${JSON.stringify(value)})`);
+    assert(index >= 0, `Missing dropdown value ${value}`);
+    await this.choose(selector, index, value);
+  }
+
   async screenshot(path) {
     const result = await this.send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true });
     writeFileSync(path, Buffer.from(result.data, 'base64'));
@@ -194,14 +202,16 @@ async function startChrome(runDir, profileDir) {
   }
 }
 
-async function run() {
+async function run(catalogOnly = false) {
   assert(existsSync(chromeBinary), 'Google Chrome is required at the standard macOS application path.');
   assert(existsSync(join(root, 'node_modules', 'vite', 'bin', 'vite.js')), 'Run npm install first.');
   assert(existsSync(join(root, 'backend', '.venv', 'bin', 'uvicorn')), 'Install backend requirements in backend/.venv first.');
   await requireFreePort(8000);
   await requireFreePort(5173);
-  const tags = await fetchJson(`${modelUrl}/api/tags`);
-  assert(tags.models?.some((model) => model.name === 'llama3.2:1b'), 'Start Ollama with llama3.2:1b installed.');
+  if (!catalogOnly) {
+    const tags = await fetchJson(`${modelUrl}/api/tags`);
+    assert(tags.models?.some((model) => model.name === 'llama3.2:1b'), 'Start Ollama with llama3.2:1b installed.');
+  }
 
   const runDir = join(root, 'artifacts', 'verify', new Date().toISOString().replaceAll(':', '-').replaceAll('.', '-'));
   mkdirSync(runDir, { recursive: true });
@@ -224,8 +234,8 @@ async function run() {
   try {
     state.backend = startProcess(join(root, 'backend', '.venv', 'bin', 'uvicorn'), ['main:app', '--host', '127.0.0.1', '--port', '8000'], join(root, 'backend'), join(runDir, 'backend.log'));
     state.vite = startProcess(process.execPath, [join(root, 'node_modules', 'vite', 'bin', 'vite.js'), '--host', '127.0.0.1', '--port', '5173', '--strictPort'], root, join(runDir, 'vite.log'));
-    await waitFor(() => doctor(state), 'usable app and Ollama', 20000);
-    report.doctor = await doctor(state);
+    await waitFor(() => doctor(state, !catalogOnly), 'usable app', 20000);
+    report.doctor = await doctor(state, !catalogOnly);
 
     const started = await startChrome(runDir, profileDir);
     state.chrome = started.chrome;
@@ -242,35 +252,50 @@ async function run() {
       if (event.response.url.includes('/api/trade')) report.tradeResponses.push({ status: event.response.status, url: event.response.url });
     });
     await browser.send('Page.navigate', { url: uiUrl });
+    await waitFor(() => browser.evaluate("!!document.querySelector('#get-started')"), 'landing page');
+    await browser.click('#get-started');
     await waitFor(() => browser.evaluate("!!document.querySelector('#team-a-team')"), 'rendered trade form');
+    await waitFor(() => browser.evaluate("document.querySelector('#team-a-team')?.options.length === 33"), '32 catalog teams');
     check((await browser.text('h1')).includes('NFL GM Simulator'), 'App heading rendered');
+    check(await browser.evaluate("document.querySelector('#team-a-team').options.length === 33"), 'All 32 teams are selectable');
     check(await browser.evaluate("document.querySelector('#analyze-trade').disabled"), 'Analyze disabled before assets are selected');
     await screenshot('01-empty.png');
 
-    await browser.choose('#team-a-team', 1, 'DET');
-    await browser.choose('#team-b-team', 2, 'DEN');
+    await browser.chooseValue('#team-a-team', 'DET');
+    await browser.chooseValue('#team-b-team', 'DET');
+    check(await browser.evaluate("document.querySelector('#analyze-trade').disabled"), 'Analyze disabled for the same franchise');
+    await browser.chooseValue('#team-b-team', 'DEN');
     check(await browser.evaluate("!!document.querySelector('#team-a-player') && !!document.querySelector('#team-b-player')"), 'Both roster selectors open');
+    check(await browser.evaluate("document.querySelector('#team-a-player').options.length > 40 && document.querySelector('#team-b-player').options.length > 40"), 'Both teams have full player lists');
     check(await browser.evaluate("document.querySelector('#analyze-trade').disabled"), 'Analyze disabled without a player');
     await screenshot('02-teams.png');
 
+    const detroitPlayer = await browser.evaluate("document.querySelector('#team-a-player').options[1].textContent.split(' (')[0]");
     await browser.choose('#team-a-player', 1, '');
-    check((await panelText('a')).includes('Amon-Ra St. Brown'), 'Detroit player appears in outgoing assets');
-    check((await panelText('a')).includes('$23.26M'), 'Detroit projected cap updates when sending Amon-Ra');
-    check((await panelText('b')).includes('$0.34M'), 'Denver projected cap updates when receiving Amon-Ra');
+    check((await panelText('a')).includes(detroitPlayer), 'Detroit player appears in outgoing assets');
+    check(/Projected Cap:\s*Unavailable/.test(await panelText('a')), 'Unknown cap space is marked unavailable');
     check(!(await browser.evaluate("document.querySelector('#analyze-trade').disabled")), 'Analyze enabled with a player');
     await screenshot('03-player-a.png');
 
+    const denverPlayer = await browser.evaluate("document.querySelector('#team-b-player').options[1].textContent.split(' (')[0]");
     await browser.choose('#team-b-player', 1, '');
-    check((await panelText('b')).includes('Patrick Surtain II'), 'Denver player appears in outgoing assets');
-    check((await panelText('a')).includes('$16.55M'), 'Detroit projected cap includes both sides');
-    check((await panelText('b')).includes('$7.05M'), 'Denver projected cap includes both sides');
+    check((await panelText('b')).includes(denverPlayer), 'Denver player appears in outgoing assets');
+    check(/Projected Cap:\s*Unavailable/.test(await panelText('b')), 'Denver cap space is marked unavailable');
     await screenshot('04-two-sided-trade.png');
 
-    await browser.click('button[aria-label="Remove Amon-Ra St. Brown from Team A"]');
-    check(!(await browser.evaluate('!!document.querySelector(\'button[aria-label="Remove Amon-Ra St. Brown from Team A"]\')')), 'Removing Detroit player removes the asset');
-    check((await panelText('a')).includes('$11.69M'), 'Detroit cap recalculates after removal');
-    check((await panelText('b')).includes('$11.91M'), 'Denver cap recalculates after removal');
+    const removeDetroitPlayer = `button[aria-label="Remove ${detroitPlayer} from Team A"]`;
+    await browser.click(removeDetroitPlayer);
+    check(!(await browser.evaluate(`!!document.querySelector(${JSON.stringify(removeDetroitPlayer)})`)), 'Removing Detroit player removes the asset');
     await screenshot('05-removed-player.png');
+    await browser.chooseValue('#team-a-team', 'SEA');
+    check(await browser.evaluate("document.querySelector('#team-a-player').options.length > 40"), 'Seattle roster is selectable');
+    check(!(await panelText('a')).includes(detroitPlayer), 'Changing teams clears outgoing players');
+    await screenshot('05-seattle-roster.png');
+    if (catalogOnly) {
+      report.result = 'pass';
+      return;
+    }
+    await browser.chooseValue('#team-a-team', 'DET');
     await browser.choose('#team-a-player', 1, '');
 
     await browser.click('#analyze-trade');
@@ -279,9 +304,6 @@ async function run() {
     await waitFor(() => browser.text('#verdict-status').then((status) => status === 'Complete' || status === 'Error'), 'completed analysis', 180000);
     const verdictStatus = await browser.text('#verdict-status');
     const analysis = await browser.text('#verdict-analysis');
-console.log("Verdict status:", verdictStatus);
-console.log("Analysis length:", analysis?.length ?? 0);
-console.log("Actual analysis:", JSON.stringify(analysis));
     check(verdictStatus === 'Complete', `Live Ollama analysis completed (got ${verdictStatus}: ${analysis?.slice(0, 200)})`);
     check(analysis && analysis.length > 100, 'Live analysis contains a substantial verdict');
     check(report.tradeResponses.some((response) => response.status === 200), 'Browser received successful trade stream');
@@ -321,12 +343,12 @@ if (process.argv[2] === 'doctor') {
     console.error(error.message);
     process.exitCode = 1;
   });
-} else if (!process.argv[2] || process.argv[2] === 'all') {
-  run().catch((error) => {
+} else if (!process.argv[2] || process.argv[2] === 'all' || process.argv[2] === 'catalog') {
+  run(process.argv[2] === 'catalog').catch((error) => {
     console.error(error.stack || error.message);
     process.exitCode = 1;
   });
 } else {
-  console.error('Usage: node .codex/skills/verify/scripts/verify.mjs [all|doctor]');
+  console.error('Usage: node .codex/skills/verify/scripts/verify.mjs [all|catalog|doctor]');
   process.exitCode = 2;
 }

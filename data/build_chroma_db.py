@@ -1,79 +1,67 @@
-import sqlite3
-import chromadb
+import argparse
+from pathlib import Path
 
-def build_vector_store():
-    db_path = './chroma_db'
-    print(f"Initializing persistent ChromaDB client at {db_path}...")
-    
-    chroma_client = chromadb.PersistentClient(path=db_path)
-    
-    # Reset collection if it already exists
+import chromadb
+import pandas as pd
+
+from backend.contracts import COLLECTION_NAME, STORE_PATH
+
+
+SOURCE = "https://github.com/nflverse/nflverse-data/releases/download/contracts/historical_contracts.parquet"
+
+
+def contract_document(row):
+    def amount(value):
+        return f"${value:,.2f} million" if pd.notna(value) else "unknown"
+
+    years = int(row.years)
+    return (
+        f"Player: {row.player}. Position: {row.position}. Signing team: {row.team}. "
+        f"Signed: {int(row.year_signed)}. Contract length: {years} {'year' if years == 1 else 'years'}. "
+        f"Total value: {amount(row.value)}. APY: {amount(row.apy)}. "
+        f"Total guaranteed: {amount(row.guaranteed)}."
+    )
+
+
+def build_vector_store(source=SOURCE, store_path=STORE_PATH):
+    frame = pd.read_parquet(source)
+    required = {"player", "position", "team", "is_active", "year_signed", "years", "value", "apy", "guaranteed", "gsis_id"}
+    missing = required - set(frame.columns)
+    if missing:
+        raise ValueError(f"Contract source is missing columns: {', '.join(sorted(missing))}")
+
+    frame = frame.loc[frame["is_active"].eq(True) & frame["player"].notna() & frame["year_signed"].notna() & frame["years"].notna()]
+    if frame.empty:
+        raise ValueError("Contract source has no active contracts")
+
+    Path(store_path).mkdir(parents=True, exist_ok=True)
+    client = chromadb.PersistentClient(path=str(store_path))
     try:
-        chroma_client.delete_collection("player_financial_reality")
-    except Exception:  # Catch any error if the collection doesn't exist yet
+        client.delete_collection(COLLECTION_NAME)
+    except chromadb.errors.NotFoundError:
         pass
-        
-    collection = chroma_client.create_collection(name="player_financial_reality")
-    
-    print("Fetching active/recent contracts from SQLite...")
-    conn = sqlite3.connect('moneyball.db')
-    cursor = conn.cursor()
-    
-    try:
-        cursor.execute("""
-            SELECT player, position, team, value, apy, guaranteed, year_signed
-            FROM otc_contracts 
-            WHERE year_signed >= 2022
-            ORDER BY year_signed DESC
-            LIMIT 1000
-        """)
-        
-        rows = cursor.fetchall()
-        columns = [d[0] for d in cursor.description]
-        
-        documents = []
-        metadatas = []
-        ids = []
-        
-        for i, row in enumerate(rows):
-            data = dict(zip(columns, row))
-            player_name = str(data.get('player') or f"Unknown_{i}")
-            team = str(data.get('team') or "FA")
-            pos = str(data.get('position') or "N/A")
-            val = float(data.get('value') or 0)
-            apy = float(data.get('apy') or 0)
-            guar = float(data.get('guaranteed') or 0)
-            year = data.get('year_signed') or "N/A"
-            
-            chunk = (
-                f"Player: {player_name}. Position: {pos}. Team: {team}. Signed: {year}. "
-                f"Contract Reality: Total value of ${val:,.0f} with an APY of ${apy:,.0f} "
-                f"and ${guar:,.0f} total guaranteed money."
-            )
-            
-            documents.append(chunk)
-            metadatas.append({
-                "player": player_name,
-                "team": team,
-                "position": pos,
-                "apy": apy
-            })
-            ids.append(f"contract_{i}_{player_name.replace(' ', '_')}")
-            
-        print(f"Embedding and indexing {len(documents)} player chunks into ChromaDB...")
-        
-        collection.add(
-            documents=documents,
-            metadatas=metadatas,
-            ids=ids
-        )
-        
-        print("Vector store build complete! ./chroma_db is populated.")
-        
-    except Exception as e:
-        print(f"Error building ChromaDB: {e}")
-    finally:
-        conn.close()
+    collection = client.create_collection(COLLECTION_NAME)
+
+    documents, metadatas, ids = [], [], []
+    for index, row in enumerate(frame.itertuples(index=False)):
+        metadata = {"player": str(row.player), "year_signed": int(row.year_signed)}
+        if pd.notna(row.gsis_id):
+            metadata["gsis_id"] = str(row.gsis_id)
+        documents.append(contract_document(row))
+        metadatas.append(metadata)
+        ids.append(f"contract_{index}")
+        if len(ids) == 100:
+            collection.add(ids=ids, documents=documents, metadatas=metadatas)
+            documents, metadatas, ids = [], [], []
+
+    if ids:
+        collection.add(ids=ids, documents=documents, metadatas=metadatas)
+    return collection.count()
+
 
 if __name__ == "__main__":
-    build_vector_store()
+    parser = argparse.ArgumentParser(description="Build the local contract vector store")
+    parser.add_argument("--source", default=SOURCE, help="Contract Parquet file or URL")
+    parser.add_argument("--store", type=Path, default=STORE_PATH, help="Chroma directory")
+    args = parser.parse_args()
+    print(f"Indexed {build_vector_store(args.source, args.store)} active contracts in {args.store}")
